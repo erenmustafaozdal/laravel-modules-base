@@ -1,0 +1,28 @@
+{
+    "name": "erenmustafaozdal/laravel-modules-core",
+    "description": "laravel 5.1 base of modules package. Controllers, Repostories etc.",
+    "license": "MT",
+    "authors": [
+        {
+            "name": "Eren Mustafa ÖZDAL",
+            "email": "eren.060737@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "ErenMustafaOzdal\\LaravelModulesCore\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.5.9",
+        "illuminate/support": "~5",
+        "laracasts/flash": "2.0.*",
+        "cartalyst/sentinel": "2.0.*",
+        "yajra/laravel-datatables-oracle": "6.10.*",
+        "intervention/image": "2.3.*"
+    },
+    "require-dev": {
+
+    }
+}
