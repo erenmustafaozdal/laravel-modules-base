@@ -6,7 +6,6 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Yajra\Datatables\Facades\Datatables;
 use Laracasts\Flash\Flash;
-use Intervention\Image\ImageManager;
 use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use DB;
 use App\User;
