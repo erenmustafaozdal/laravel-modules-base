@@ -15,7 +15,7 @@ class ImageRepository extends FileRepository
      * @param $request
      * @param \Illuminate\Support\Collection $configs
      * @param boolean|false $isTemplate
-     * @return mixed
+     * @return string|boolean
      */
     public function uploadPhoto($model, $request, $configs, $isTemplate = false)
     {
@@ -62,12 +62,13 @@ class ImageRepository extends FileRepository
      * @param $photo
      * @param $photoName
      * @param $path
-     * @return mixed
+     * @return string
      */
     public function template($photo, $photoName, $path)
     {
         $this->cleanDirectory($path);
         $this->makeDirectory($path, 0775, true);
-        return Image::make( $photo )->encode('jpg')->save($path . '/' . $photoName );
+        Image::make( $photo )->encode('jpg')->save($path . '/' . $photoName );
+        return '/' . $path . '/' . $photoName;
     }
 }
