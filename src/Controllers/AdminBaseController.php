@@ -370,6 +370,6 @@ abstract class AdminBaseController extends Controller
      */
     public function routePath($path = "index")
     {
-        return 'admin.' . snake_case($this->model) . '.' . $path;
+        return 'admin.' . snake_case( substr( strrchr( get_class($this->model), '\\' ), 1 ) ) . '.' . $path;
     }
 }

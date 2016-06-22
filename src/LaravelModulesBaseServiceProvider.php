@@ -13,7 +13,10 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-modules-base');
+        $this->publishes([
+            __DIR__.'/../resources/lang' => base_path('resources/lang/vendor/laravel-modules-base'),
+        ]);
     }
 
     /**
