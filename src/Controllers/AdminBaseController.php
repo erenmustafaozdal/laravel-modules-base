@@ -10,6 +10,7 @@ use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use DB;
 use App\User;
 
+use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
 // events
 use ErenMustafaOzdal\LaravelUserModule\Events\User\StoreSuccess;
 use ErenMustafaOzdal\LaravelUserModule\Events\User\StoreFail;
@@ -44,12 +45,10 @@ abstract class AdminBaseController extends Controller
     protected $model = "";
 
     /**
-     * AdminBaseController constructor.
+     * if is use image repository, image repository object
+     * @var ImageRepository
      */
-    public function __construct()
-    {
-        $this->model = $this->getModel();
-    }
+    protected $imageRepo;
 
     /**
      * get Datatables
@@ -126,32 +125,32 @@ abstract class AdminBaseController extends Controller
      *
      * @param $class
      * @param $request
-     * @param bool|false $imageColumn
+     * @param array $imageOptions
      * @param string $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function storeModel($class, $request, $imageColumn = false, $path = 'index')
+    public function storeModel($class, $request, $imageOptions = [], $path = 'index')
     {
         DB::beginTransaction();
         try {
-            $model = $class::create($this->getData($request, $imageColumn));
+            $this->model = $class::create($this->getData($request, $imageOptions));
 
-            if ( ! isset($model->id)) {
+            if ( ! isset($this->model->id)) {
                 throw new StoreException($request->all());
             }
 
             // eğer üye kaydı ise ve is_active true var ise
             if ($class === 'App\User' && $request->has('is_active')) {
-                $this->activationComplete($model);
+                $this->activationComplete($this->model);
             }
 
-            event(new StoreSuccess($model));
+            event(new StoreSuccess($this->model));
             DB::commit();
-            return response()->json(['result' => 'success']);
+            return response()->json($this->returnData('success', $imageOptions));
         } catch (StoreException $e) {
             DB::rollback();
             event(new StoreFail($e->getDatas()));
-            return response()->json(['result' => 'error']);
+            return response()->json($this->returnData('error', $imageOptions));
         }
     }
 
@@ -160,41 +159,37 @@ abstract class AdminBaseController extends Controller
      *
      * @param $model
      * @param $request
-     * @param bool|false $imageColumn
+     * @param array $imageOptions
      * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function updateModel($model, $request, $imageColumn = false, $path = null)
+    public function updateModel($model, $request, $imageOptions = [], $path = null)
     {
+        $this->model = $model;
         DB::beginTransaction();
         try {
-            $model->fill($this->getData($request, $imageColumn));
-            if ( ! $model->save()) {
-                throw new UpdateException($model);
+            $this->model->fill($this->getData($request, $imageOptions));
+            if ( ! $this->model->save()) {
+                throw new UpdateException($this->model);
             }
 
-            // eğer üye güncelleme ise is_active durumuna göre aktivasyon işlemi yap
-            if ($model instanceof User) {
-                $request->has('is_active') ? $this->activationComplete($model) : $this->activationRemove($model);
-            }
-
-            event(new UpdateSuccess($model));
+            event(new UpdateSuccess($this->model));
             DB::commit();
 
             if (is_null($path)) {
-                return response()->json(['result' => 'success']);
+                return response()->json($this->returnData('success', $imageOptions));
             }
-            Flash::success(lmcTrans('laravel-user-module/admin.flash.update_success'));
+            Flash::success(trans('laravel-modules-base::admin.flash.update_success'));
+            return $this->redirectRoute($path, $this->model);
         } catch (UpdateException $e) {
             DB::rollback();
             event(new UpdateFail($e->getDatas()));
 
             if (is_null($path)) {
-                return response()->json(['result' => 'error']);
+                return response()->json($this->returnData('error', $imageOptions));
             }
-            Flash::error(lmcTrans('laravel-user-module/admin.flash.update_error'));
-        } finally {
-            return $this->redirectRoute($path, $model);
+            Flash::error(trans('laravel-modules-base::admin.flash.update_error'));
+            return $this->redirectRoute($path, $this->model);
         }
     }
 
@@ -207,16 +202,17 @@ abstract class AdminBaseController extends Controller
      */
     public function destroyModel($model, $path = "index")
     {
+        $this->model = $model;
         try {
-            if ( ! $model->delete()) {
-                throw new DestroyException($model);
+            if ( ! $this->model->delete()) {
+                throw new DestroyException($this->model);
             }
 
-            event(new DestroySuccess($model));
-            return response()->json(['result' => 'success']);
+            event(new DestroySuccess($this->model));
+            return response()->json($this->returnData('success'));
         } catch (DestroyException $e) {
             event(new DestroyFail($e->getDatas()));
-            return response()->json(['result' => 'error']);
+            return response()->json($this->returnData('error'));
         }
     }
 
@@ -317,53 +313,38 @@ abstract class AdminBaseController extends Controller
     }
 
     /**
-     * Upload the image and return the data
-     *
-     * @param $request
-     * @param string $field
-     * @return mixed
-     */
-    protected function uploadImage($request, $field)
-    {
-        $data = $request->except($field);
-        if ($request->file($field)) {
-            $file = $request->file($field);
-            $originalName = $file->getClientOriginalName();
-            $originalExt = $file->getClientOriginalExtension();
-            $request->file($field);
-            $fileName = rename_file($file->getClientOriginalName(), $file->getClientOriginalExtension());
-            $path = $this->getUploadPath($field);
-            $move_path = public_path($path);
-            $file->move($move_path, $fileName);
-            $data[$field] = $path . $fileName;
-        }
-        return $data;
-    }
-
-    /**
-     * Get model name
-     * if isset the model parameter, then get it
-     * if not then get the class name, strip "Controller" out
-     *
-     * @return string
-     */
-    protected function getModel()
-    {
-        return empty($this->model) ?
-            explode('Controller', substr(strrchr(get_class($this), '\\'), 1))[0]  :
-            $this->model;
-    }
-
-    /**
      * Get data, if image column is passed, upload it
      *
      * @param $request
-     * @param $imageColumn
+     * @param array $imageOptions
      * @return mixed
      */
-    protected function getData($request, $imageColumn)
+    protected function getData($request, $imageOptions)
     {
-        return $imageColumn === false ? $request->all() : $this->uploadImage($request, $imageColumn);
+        if ( ! $imageOptions){
+            return $request->all();
+        }
+        $this->imageRepo = new ImageRepository();
+        $datas = $request->except($imageOptions['column']);
+        $this->imageRepo->uploadPhoto($this->model, $request, $imageOptions);
+        $datas[$imageOptions['column']] = $this->imageRepo->photoName;
+        return $datas;
+    }
+
+    /**
+     * return data for api
+     *
+     * @param string $type
+     * @param array $imageOptions
+     * @return array
+     */
+    protected function returnData($type, $imageOptions = [])
+    {
+        $data = ['result' => $type];
+        if ($imageOptions){
+            $data['photos'] = $this->imageRepo->photos;
+        }
+        return $data;
     }
 
     /**

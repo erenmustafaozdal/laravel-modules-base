@@ -7,13 +7,6 @@ use Illuminate\Support\Facades\File;
 class FileRepository
 {
     /**
-     * Upload path
-     *
-     * @var string
-     */
-    protected $uploadPath = 'uploads';
-
-    /**
      * create file name
      *
      * @param UploadedFile $file
