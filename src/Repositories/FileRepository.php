@@ -12,7 +12,7 @@ class FileRepository
      * @param UploadedFile $file
      * @return string
      */
-    protected function createFileName($file)
+    public function createFileName($file)
     {
         $filename = $file->getClientOriginalName();
         $mime = $file->getClientOriginalExtension();
@@ -30,7 +30,7 @@ class FileRepository
      * @param bool $recursive
      * @return boolean
      */
-    protected function makeDirectory($path, $mode = 0775, $recursive = false)
+    public function makeDirectory($path, $mode = 0775, $recursive = false)
     {
         if ( ! File::exists($path)) {
             File::makeDirectory($path,  $mode, $recursive);
@@ -44,7 +44,7 @@ class FileRepository
      * @param string $path
      * @return bool
      */
-    protected function deleteDirectory($path)
+    public function deleteDirectory($path)
     {
         if ( ! $this->isDirectory($path)) {
             return true;
@@ -58,7 +58,7 @@ class FileRepository
      * @param string $path
      * @return bool
      */
-    protected function isDirectory($path)
+    public function isDirectory($path)
     {
         return File::isDirectory($path);
     }
@@ -69,7 +69,7 @@ class FileRepository
      * @param string $path
      * @return bool
      */
-    protected function cleanDirectory($path)
+    public function cleanDirectory($path)
     {
         return File::cleanDirectory($path);
     }
