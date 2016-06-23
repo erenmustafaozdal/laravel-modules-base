@@ -8,7 +8,6 @@ use Yajra\Datatables\Facades\Datatables;
 use Laracasts\Flash\Flash;
 use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use DB;
-use App\User;
 
 use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
 // events
@@ -360,7 +359,6 @@ abstract class AdminBaseController extends Controller
             return redirect( route($this->routePath($path), ['id' => $model->id]) );
         }
         return redirect( route($this->routePath($path)) );
-
     }
 
 
@@ -372,6 +370,6 @@ abstract class AdminBaseController extends Controller
      */
     public function routePath($path = "index")
     {
-        return 'admin.' . snake_case($this->model) . '.' . $path;
+        return 'admin.' . snake_case( substr( strrchr( get_class($this->model), '\\' ), 1 ) ) . '.' . $path;
     }
 }
