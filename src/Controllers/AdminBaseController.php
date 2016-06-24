@@ -10,21 +10,11 @@ use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use DB;
 
 use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
-// events
-use ErenMustafaOzdal\LaravelUserModule\Events\User\StoreSuccess;
-use ErenMustafaOzdal\LaravelUserModule\Events\User\StoreFail;
-use ErenMustafaOzdal\LaravelUserModule\Events\User\UpdateSuccess;
-use ErenMustafaOzdal\LaravelUserModule\Events\User\UpdateFail;
-use ErenMustafaOzdal\LaravelUserModule\Events\User\DestroySuccess;
-use ErenMustafaOzdal\LaravelUserModule\Events\User\DestroyFail;
-use ErenMustafaOzdal\LaravelUserModule\Events\Auth\ActivateSuccess;
-use ErenMustafaOzdal\LaravelUserModule\Events\Auth\ActivateRemove;
-use ErenMustafaOzdal\LaravelUserModule\Events\Auth\ActivateFail;
 // exceptions
-use ErenMustafaOzdal\LaravelUserModule\Exceptions\StoreException;
-use ErenMustafaOzdal\LaravelUserModule\Exceptions\UpdateException;
-use ErenMustafaOzdal\LaravelUserModule\Exceptions\DestroyException;
-use ErenMustafaOzdal\LaravelUserModule\Exceptions\Auth\ActivateException;
+use ErenMustafaOzdal\LaravelModulesBase\Exceptions\StoreException;
+use ErenMustafaOzdal\LaravelModulesBase\Exceptions\UpdateException;
+use ErenMustafaOzdal\LaravelModulesBase\Exceptions\DestroyException;
+use ErenMustafaOzdal\LaravelModulesBase\Exceptions\ActivateException;
 
 
 abstract class AdminBaseController extends Controller
@@ -66,11 +56,11 @@ abstract class AdminBaseController extends Controller
         $this->dataTables->addColumn('urls', function($model) use($addUrls)
         {
             $urls = [
-                'details'   => route('api.user.detail', ['id' => $model->id]),
-                'fast_edit' => route('api.user.fast_edit', ['id' => $model->id]),
-                'show'      => route('admin.user.show', ['id' => $model->id]),
-                'edit'      => route('api.user.update', ['id' => $model->id]),
-                'destroy'   => route('api.user.destroy', ['id' => $model->id]),
+                'details'   => route("api.{$this->getModel($model)}.detail", ['id' => $model->id]),
+                'fast_edit' => route("api.{$this->getModel($model)}.fast_edit", ['id' => $model->id]),
+                'show'      => route("admin.{$this->getModel($model)}.show", ['id' => $model->id]),
+                'edit'      => route("api.{$this->getModel($model)}.update", ['id' => $model->id]),
+                'destroy'   => route("api.{$this->getModel($model)}.destroy", ['id' => $model->id]),
             ];
             foreach($addUrls as $key => $value){
                 if (isset($value['id']) && $value['id']) {
@@ -124,11 +114,12 @@ abstract class AdminBaseController extends Controller
      *
      * @param $class
      * @param $request
+     * @param array $events
      * @param array $imageOptions
      * @param string $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function storeModel($class, $request, $imageOptions = [], $path = 'index')
+    public function storeModel($class, $request, $events, $imageOptions = [], $path = 'index')
     {
         DB::beginTransaction();
         try {
@@ -140,15 +131,15 @@ abstract class AdminBaseController extends Controller
 
             // eğer üye kaydı ise ve is_active true var ise
             if ($class === 'App\User' && $request->has('is_active')) {
-                $this->activationComplete($this->model);
+                $this->activationComplete($this->model, $events);
             }
 
-            event(new StoreSuccess($this->model));
+            event(new $events['success']($this->model));
             DB::commit();
             return response()->json($this->returnData('success', $imageOptions));
         } catch (StoreException $e) {
             DB::rollback();
-            event(new StoreFail($e->getDatas()));
+            event(new $events['fail']($e->getDatas()));
             return response()->json($this->returnData('error', $imageOptions));
         }
     }
@@ -158,11 +149,12 @@ abstract class AdminBaseController extends Controller
      *
      * @param $model
      * @param $request
+     * @param array $events
      * @param array $imageOptions
      * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function updateModel($model, $request, $imageOptions = [], $path = null)
+    public function updateModel($model, $request, $events, $imageOptions = [], $path = null)
     {
         $this->model = $model;
         DB::beginTransaction();
@@ -172,7 +164,7 @@ abstract class AdminBaseController extends Controller
                 throw new UpdateException($this->model);
             }
 
-            event(new UpdateSuccess($this->model));
+            event(new $events['success']($this->model));
             DB::commit();
 
             if (is_null($path)) {
@@ -182,7 +174,7 @@ abstract class AdminBaseController extends Controller
             return $this->redirectRoute($path, $this->model);
         } catch (UpdateException $e) {
             DB::rollback();
-            event(new UpdateFail($e->getDatas()));
+            event(new $events['fail']($e->getDatas()));
 
             if (is_null($path)) {
                 return response()->json($this->returnData('error', $imageOptions));
@@ -196,10 +188,11 @@ abstract class AdminBaseController extends Controller
      * Delete and flash success or fail then redirect or return api result
      *
      * @param $model
+     * @param array $events
      * @param string $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function destroyModel($model, $path = "index")
+    public function destroyModel($model, $events, $path = "index")
     {
         $this->model = $model;
         try {
@@ -207,10 +200,10 @@ abstract class AdminBaseController extends Controller
                 throw new DestroyException($this->model);
             }
 
-            event(new DestroySuccess($this->model));
+            event(new $events['success']($this->model));
             return response()->json($this->returnData('success'));
         } catch (DestroyException $e) {
-            event(new DestroyFail($e->getDatas()));
+            event(new $events['fail']($e->getDatas()));
             return response()->json($this->returnData('error'));
         }
     }
@@ -219,9 +212,10 @@ abstract class AdminBaseController extends Controller
      * set activation complete
      *
      * @param $user
+     * @param array $events
      * @return boolean
      */
-    protected function activationComplete($user)
+    protected function activationComplete($user, $events)
     {
         try {
             $activation = Activation::create($user);
@@ -230,10 +224,10 @@ abstract class AdminBaseController extends Controller
             }
             $user->is_active = true;
             $user->save();
-            event(new ActivateSuccess($user));
+            event(new $events['activationSuccess']($user));
             return true;
         } catch (ActivateException $e) {
-            event(new ActivateFail($e->getId(),$e->getActivationCode(), $e->getType()));
+            event(new $events['activationFail']($e->getId(),$e->getActivationCode(), $e->getType()));
             return false;
         }
     }
@@ -242,9 +236,10 @@ abstract class AdminBaseController extends Controller
      * activation remove
      *
      * @param $user
+     * @param array $events
      * @return boolean
      */
-    protected function activationRemove($user)
+    protected function activationRemove($user, $events)
     {
         try {
             if ( ! $activation = Activation::completed($user)) {
@@ -255,10 +250,10 @@ abstract class AdminBaseController extends Controller
             }
             $user->is_active = false;
             $user->save();
-            event(new ActivateRemove($user));
+            event(new $events['activationRemove']($user));
             return true;
         } catch (ActivateException $e) {
-            event(new ActivateFail($e->getId(),$e->getActivationCode(), $e->getType()));
+            event(new $events['activationFail']($e->getId(),$e->getActivationCode(), $e->getType()));
             return false;
         }
     }
@@ -268,13 +263,14 @@ abstract class AdminBaseController extends Controller
      *
      * @param $class
      * @param array $ids
+     * @param array $events
      * @return boolean
      */
-    protected function activateGroupAction($class, $ids)
+    protected function activateGroupAction($class, $ids, $events)
     {
         $users = $class::whereIn('id', $ids)->get();
         foreach($users as $user) {
-            $this->activationComplete($user);
+            $this->activationComplete($user,$events);
         }
         return true;
     }
@@ -284,13 +280,14 @@ abstract class AdminBaseController extends Controller
      *
      * @param $class
      * @param array $ids
+     * @param array $events
      * @return boolean
      */
-    protected function notActivateGroupAction($class, $ids)
+    protected function notActivateGroupAction($class, $ids, $events)
     {
         $users = $class::whereIn('id', $ids)->get(['id']);
         foreach($users as $user) {
-            $this->activationRemove($user);
+            $this->activationRemove($user, $events);
         }
         return true;
     }
@@ -300,9 +297,10 @@ abstract class AdminBaseController extends Controller
      *
      * @param $class
      * @param array $ids
+     * @param array $events
      * @return boolean
      */
-    protected function destroyGroupAction($class, $ids)
+    protected function destroyGroupAction($class, $ids, $events)
     {
         $result = $class::destroy($ids);
         if ( is_integer($result) && $result > 0) {
@@ -361,7 +359,6 @@ abstract class AdminBaseController extends Controller
         return redirect( route($this->routePath($path)) );
     }
 
-
     /**
      * Returns route path as string
      *
@@ -370,6 +367,17 @@ abstract class AdminBaseController extends Controller
      */
     public function routePath($path = "index")
     {
-        return 'admin.' . snake_case( substr( strrchr( get_class($this->model), '\\' ), 1 ) ) . '.' . $path;
+        return 'admin.' . $this->getModel($this->model) . '.' . $path;
+    }
+
+    /**
+     * get model slug
+     *
+     * @param $model
+     * @return string
+     */
+    protected function getModel($model)
+    {
+        return snake_case( substr( strrchr( get_class($model), '\\' ), 1 ) );
     }
 }
