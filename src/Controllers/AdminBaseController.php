@@ -116,10 +116,10 @@ abstract class AdminBaseController extends Controller
      * @param $request
      * @param array $events
      * @param array $imageOptions
-     * @param string $path
+     * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function storeModel($class, $request, $events, $imageOptions = [], $path = 'index')
+    public function storeModel($class, $request, $events, $imageOptions = [], $path = null)
     {
         DB::beginTransaction();
         try {
@@ -136,11 +136,21 @@ abstract class AdminBaseController extends Controller
 
             event(new $events['success']($this->model));
             DB::commit();
-            return response()->json($this->returnData('success', $imageOptions));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('success', $imageOptions));
+            }
+            Flash::success(trans('laravel-modules-base::admin.flash.store_success'));
+            return $this->redirectRoute($path, $this->model);
         } catch (StoreException $e) {
             DB::rollback();
             event(new $events['fail']($e->getDatas()));
-            return response()->json($this->returnData('error', $imageOptions));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('error', $imageOptions));
+            }
+            Flash::error(trans('laravel-modules-base::admin.flash.store_error'));
+            return $this->redirectRoute($path, $this->model);
         }
     }
 
