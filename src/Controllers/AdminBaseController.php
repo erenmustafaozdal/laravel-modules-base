@@ -199,10 +199,10 @@ abstract class AdminBaseController extends Controller
      *
      * @param $model
      * @param array $events
-     * @param string $path
+     * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function destroyModel($model, $events, $path = "index")
+    public function destroyModel($model, $events, $path = null)
     {
         $this->model = $model;
         try {
@@ -211,10 +211,20 @@ abstract class AdminBaseController extends Controller
             }
 
             event(new $events['success']($this->model));
-            return response()->json($this->returnData('success'));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('success'));
+            }
+            Flash::success(trans('laravel-modules-base::admin.flash.destroy_success'));
+            return $this->redirectRoute($path, $this->model);
         } catch (DestroyException $e) {
             event(new $events['fail']($e->getDatas()));
-            return response()->json($this->returnData('error'));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('error'));
+            }
+            Flash::error(trans('laravel-modules-base::admin.flash.destroy_error'));
+            return $this->redirectRoute($path, $this->model);
         }
     }
 
@@ -363,7 +373,7 @@ abstract class AdminBaseController extends Controller
      */
     protected function redirectRoute($path, $model = false)
     {
-        if ($model) {
+        if ($path !== 'index') {
             return redirect( route($this->routePath($path), ['id' => $model->id]) );
         }
         return redirect( route($this->routePath($path)) );
