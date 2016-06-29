@@ -123,7 +123,7 @@ abstract class AdminBaseController extends Controller
     {
         DB::beginTransaction();
         try {
-            $this->model = $class::create($this->getData($request, $imageOptions));
+            $this->model = $class::create($request->except($imageOptions['column']));
 
             if ( ! isset($this->model->id)) {
                 throw new StoreException($request->all());
@@ -132,6 +132,15 @@ abstract class AdminBaseController extends Controller
             // eğer üye kaydı ise ve is_active true var ise
             if ($class === 'App\User' && $request->has('is_active')) {
                 $this->activationComplete($this->model, $events);
+            }
+
+            if ($imageOptions){
+                $datas = $this->getData($request, $imageOptions);
+                $this->model->fill([$imageOptions['column'] => $datas[$imageOptions['column']]]);
+
+                if (! $this->model->save()) {
+                    throw new StoreException($request->all());
+                }
             }
 
             event(new $events['success']($this->model));
@@ -338,7 +347,7 @@ abstract class AdminBaseController extends Controller
      */
     protected function getData($request, $imageOptions)
     {
-        if ( ! $imageOptions){
+        if ( ! $imageOptions || ! $request->file($imageOptions['column'])){
             return $request->all();
         }
         $this->imageRepo = new ImageRepository();
