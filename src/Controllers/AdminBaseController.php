@@ -347,7 +347,7 @@ abstract class AdminBaseController extends Controller
      */
     protected function getData($request, $imageOptions)
     {
-        if ( ! $imageOptions){
+        if ( ! $imageOptions || ! $request->file($imageOptions['column'])){
             return $request->all();
         }
         $this->imageRepo = new ImageRepository();
