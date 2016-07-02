@@ -57,7 +57,7 @@ abstract class AdminBaseController extends Controller
         {
             $urls = [
                 'details'   => route("api.{$this->getModel($model)}.detail", ['id' => $model->id]),
-                'fast_edit' => route("api.{$this->getModel($model)}.fast_edit", ['id' => $model->id]),
+                'fast_edit' => route("api.{$this->getModel($model)}.fastEdit", ['id' => $model->id]),
                 'show'      => route("admin.{$this->getModel($model)}.show", ['id' => $model->id]),
                 'edit'      => route("api.{$this->getModel($model)}.update", ['id' => $model->id]),
                 'destroy'   => route("api.{$this->getModel($model)}.destroy", ['id' => $model->id]),
@@ -123,7 +123,8 @@ abstract class AdminBaseController extends Controller
     {
         DB::beginTransaction();
         try {
-            $this->model = $class::create($request->except($imageOptions['column']));
+            $datas = $imageOptions ? $request->except($imageOptions['column']) : $request->all();
+            $this->model = $class::create($datas);
 
             if ( ! isset($this->model->id)) {
                 throw new StoreException($request->all());
@@ -134,7 +135,7 @@ abstract class AdminBaseController extends Controller
                 $this->activationComplete($this->model, $events);
             }
 
-            if ($imageOptions){
+            if ($imageOptions && $request->has($imageOptions['column'])){
                 $datas = $this->getData($request, $imageOptions);
                 $this->model->fill([$imageOptions['column'] => $datas[$imageOptions['column']]]);
 
@@ -272,8 +273,9 @@ abstract class AdminBaseController extends Controller
     {
         try {
             if ( ! $activation = Activation::completed($user)) {
-                throw new ActivateException($user, $activation->code, 'not_completed');
+                throw new ActivateException($user, '', 'not_completed');
             }
+
             if ( ! Activation::remove($user)) {
                 throw new ActivateException($user, $activation->code, 'not_remove');
             }
@@ -347,7 +349,7 @@ abstract class AdminBaseController extends Controller
      */
     protected function getData($request, $imageOptions)
     {
-        if ( ! $imageOptions){
+        if ( ! $imageOptions || ! $request->file($imageOptions['column'])){
             return $request->all();
         }
         $this->imageRepo = new ImageRepository();

@@ -30,5 +30,14 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->app->register('Yajra\Datatables\DatatablesServiceProvider');
         $this->app->register('Cartalyst\Sentinel\Laravel\SentinelServiceProvider');
         $this->app->register('Intervention\Image\ImageServiceProvider');
+
+        $this->app->booting(function()
+        {
+            $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+            $loader->alias('Sentinel', 'Cartalyst\Sentinel\Laravel\Facades\Sentinel');
+        });
+
+        $router = $this->app['router'];
+        $router->middleware('permission',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\Permission::class);
     }
 }
