@@ -1,5 +1,5 @@
 {
-    "name": "erenmustafaozdal/laravel-modules-core",
+    "name": "erenmustafaozdal/laravel-modules-base",
     "description": "laravel 5.1 base of modules package. Controllers, Repostories etc.",
     "license": "MT",
     "authors": [
@@ -10,7 +10,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "ErenMustafaOzdal\\LaravelModulesCore\\": "src/"
+            "ErenMustafaOzdal\\LaravelModulesBase\\": "src/"
         }
     },
     "minimum-stability": "dev",
