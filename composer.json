@@ -13,7 +13,6 @@
             "ErenMustafaOzdal\\LaravelModulesBase\\": "src/"
         }
     },
-    "minimum-stability": "dev",
     "require": {
         "laracasts/flash": "2.0.*",
         "cartalyst/sentinel": "2.0.*",
