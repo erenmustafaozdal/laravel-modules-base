@@ -13,7 +13,10 @@
             "ErenMustafaOzdal\\LaravelModulesBase\\": "src/"
         }
     },
+    "minimum-stability": "beta",
     "require": {
+        "php": ">=5.5.9",
+        "illuminate/support": "~5",
         "laracasts/flash": "2.0.*",
         "cartalyst/sentinel": "2.0.*",
         "yajra/laravel-datatables-oracle": "6.10.*",
