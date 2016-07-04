@@ -57,9 +57,12 @@ class Permission
         }
 
         if (
-            (! in_array($route, $this->userRoutes)
-            || Request::route('users')->id !== Sentinel::getUser()->id)
-            && ! Sentinel::hasAccess( $route )
+            ! Sentinel::getUser()->is_super_admin
+            && (
+                (! in_array($route, $this->userRoutes)
+                || Request::route('users')->id !== Sentinel::getUser()->id)
+                && ! Sentinel::hasAccess( $route )
+            )
         ) {
             abort(403);
         }
