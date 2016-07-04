@@ -47,17 +47,20 @@ class Permission
     public function handle($request, Closure $next)
     {
         $route = Route::currentRouteName();
+        $method = $request->method();
 
         // if user destroy route
         if (
-            in_array($route, $this->userDestroyRoutes)
+            $method == 'GET'
+            && in_array($route, $this->userDestroyRoutes)
             && Request::route('users')->id === Sentinel::getUser()->id
         ) {
             abort(403);
         }
 
         if (
-            ! Sentinel::getUser()->is_super_admin
+            $method == 'GET'
+            && ! Sentinel::getUser()->is_super_admin
             && (
                 (! in_array($route, $this->userRoutes)
                 || Request::route('users')->id !== Sentinel::getUser()->id)
