@@ -2,6 +2,7 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Yajra\Datatables\Facades\Datatables;
@@ -290,6 +291,45 @@ abstract class AdminBaseController extends Controller
     }
 
     /**
+     * set publish the model
+     *
+     * @param $model
+     * @param boolean $hasPublish
+     * @param array $events
+     * @param string|null $path
+     * @return boolean
+     */
+    protected function updateModelPublish($model, $hasPublish, $events, $path = null)
+    {
+        $this->model = $model;
+        DB::beginTransaction();
+        try {
+            $this->model->is_publish = $hasPublish;
+            if ( ! $this->model->save()) {
+                throw new UpdateException($this->model);
+            }
+
+            event(new $events['success']($this->model));
+            DB::commit();
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('success'));
+            }
+            Flash::success(trans('laravel-modules-base::admin.flash.update_success'));
+            return $this->redirectRoute($path, $this->model);
+        } catch (UpdateException $e) {
+            DB::rollback();
+            event(new $events['fail']($e->getDatas()));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('error'));
+            }
+            Flash::error(trans('laravel-modules-base::admin.flash.update_error'));
+            return $this->redirectRoute($path, $this->model);
+        }
+    }
+
+    /**
      * activate group action
      *
      * @param $class
@@ -321,6 +361,50 @@ abstract class AdminBaseController extends Controller
             $this->activationRemove($user, $events);
         }
         return true;
+    }
+
+    /**
+     * publish group action
+     *
+     * @param $class
+     * @param array $ids
+     * @param array $events
+     * @return boolean
+     */
+    protected function publishGroupAction($class, $ids, $events)
+    {
+        try {
+            if ( ! $class::whereIn('id', $ids)->update(['is_publish' => true])) {
+                throw new UpdateException($ids, 'group not published');
+            }
+            event(new $events['success']($ids));
+            return true;
+        } catch (UpdateException $e) {
+            event(new $events['fail']($e->getDatas()));
+            return false;
+        }
+    }
+
+    /**
+     * not publish group action
+     *
+     * @param $class
+     * @param array $ids
+     * @param array $events
+     * @return boolean
+     */
+    protected function notPublishGroupAction($class, $ids, $events)
+    {
+        try {
+            if ( ! $class::whereIn('id', $ids)->update(['is_publish' => false])) {
+                throw new UpdateException($ids, 'group not published');
+            }
+            event(new $events['success']($ids));
+            return true;
+        } catch (UpdateException $e) {
+            event(new $events['fail']($e->getDatas()));
+            return false;
+        }
     }
 
     /**
