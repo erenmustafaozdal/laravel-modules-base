@@ -1,7 +1,7 @@
 {
     "name": "erenmustafaozdal/laravel-modules-base",
     "description": "laravel 5.1 base of modules package. Controllers, Repostories etc...",
-    "license": "MT",
+    "license": "MIT",
     "authors": [
         {
             "name": "Eren Mustafa ÖZDAL",
