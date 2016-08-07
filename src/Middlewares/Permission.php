@@ -62,8 +62,10 @@ class Permission
             $method == 'GET'
             && ! Sentinel::getUser()->is_super_admin
             && (
-                (! in_array($route, $this->userRoutes)
-                || Request::route('users')->id !== Sentinel::getUser()->id)
+                (
+                    ! in_array($route, $this->userRoutes)
+                    || Request::route('users')->id !== Sentinel::getUser()->id
+                )
                 && ! Sentinel::hasAccess( $route )
             )
         ) {
