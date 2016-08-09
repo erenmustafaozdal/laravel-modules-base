@@ -35,6 +35,20 @@ abstract class AdminBaseController extends Controller
     protected $model = "";
 
     /**
+     * Related model id
+     *
+     * @var integer|null
+     */
+    protected $relatedModelId = null;
+
+    /**
+     * model route regex
+     *
+     * @var string|null
+     */
+    protected $modelRouteRegex = null;
+
+    /**
      * if is use image repository, image repository object
      * @var ImageRepository
      */
@@ -65,7 +79,8 @@ abstract class AdminBaseController extends Controller
             ];
             foreach($addUrls as $key => $value){
                 if (isset($value['id']) && $value['id']) {
-                    $urls[$key] = route($value['route'], ['id' => $model->id]);
+                    $routeParam = isset($value['model']) ? [ 'id' => $value['id'], $value['model'] => $model->id] : ['id' => $model->id];
+                    $urls[$key] = route($value['route'], $routeParam);
                     continue;
                 }
                 $urls[$key] = route($value['route']);
@@ -468,10 +483,20 @@ abstract class AdminBaseController extends Controller
      */
     protected function redirectRoute($path, $model = false)
     {
-        if ($path !== 'index') {
+        if (strpos($path,'index') === false && strpos($path,'.') === false) {
             return redirect( route($this->routePath($path), ['id' => $model->id]) );
+        } else if (strpos($path,'index') === false) {
+            return redirect( route($this->routePath($path), [
+                'id'                    => $this->relatedModelId,
+                $this->modelRouteRegex  => $model->id
+            ]) );
         }
-        return redirect( route($this->routePath($path)) );
+
+        if (strpos($path,'.') === false) {
+            return redirect( route($this->routePath($path)) );
+        } else {
+            return redirect( route($this->routePath($path), ['id' => $this->relatedModelId]) );
+        }
     }
 
     /**
@@ -482,7 +507,7 @@ abstract class AdminBaseController extends Controller
      */
     public function routePath($path = "index")
     {
-        return 'admin.' . $this->getModel($this->model) . '.' . $path;
+        return strpos($path,'.') === false ? 'admin.' . $this->getModel($this->model) . '.' . $path : 'admin.' . $path;
     }
 
     /**
