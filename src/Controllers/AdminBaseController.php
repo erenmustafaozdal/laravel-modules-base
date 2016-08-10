@@ -70,13 +70,22 @@ abstract class AdminBaseController extends Controller
         $addUrls = array_has($addColumns, 'addUrls') ? array_pull($addColumns, 'addUrls') : [];
         $this->dataTables->addColumn('urls', function($model) use($addUrls)
         {
+            // if addUrls variable is empty return
+            if ( ! $addUrls) {
+                return;
+            }
+
             $urls = [
                 'details'   => route("api.{$this->getModel($model)}.detail", ['id' => $model->id]),
                 'fast_edit' => route("api.{$this->getModel($model)}.fastEdit", ['id' => $model->id]),
-                'show'      => route("admin.{$this->getModel($model)}.show", ['id' => $model->id]),
                 'edit'      => route("api.{$this->getModel($model)}.update", ['id' => $model->id]),
                 'destroy'   => route("api.{$this->getModel($model)}.destroy", ['id' => $model->id]),
             ];
+            // show route is not defined in addUrls, add to urls variable
+            if ( ! isset($addUrls['show'])) {
+                $urls['show'] = route("admin.{$this->getModel($model)}.show", ['id' => $model->id]);
+            }
+
             foreach($addUrls as $key => $value){
                 if (isset($value['id']) && $value['id']) {
                     $routeParam = isset($value['model']) ? [ 'id' => $value['id'], $value['model'] => $model->id] : ['id' => $model->id];
