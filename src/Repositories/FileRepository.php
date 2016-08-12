@@ -6,6 +6,12 @@ use Illuminate\Support\Facades\File;
 
 class FileRepository
 {
+    /*
+    |--------------------------------------------------------------------------
+    | File Methods
+    |--------------------------------------------------------------------------
+    */
+
     /**
      * create file name
      *
@@ -21,6 +27,27 @@ class FileRepository
         $filename = $filename . '_' . time() .  '.' . $mime;
         return $filename;
     }
+
+    /**
+     * Get the file size of a given file.
+     *
+     * @param  string  $path
+     * @return int
+     */
+    public function size($path)
+    {
+        return File::size($path);
+    }
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Directory Methods
+    |--------------------------------------------------------------------------
+    */
 
     /**
      * make directory
