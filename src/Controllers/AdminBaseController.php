@@ -135,6 +135,45 @@ abstract class AdminBaseController extends Controller
     }
 
     /**
+     * get nestable nodes
+     *
+     * @param $class
+     * @param $request
+     * @return array
+     */
+    protected function getNodes($class, $request)
+    {
+        $records = [];
+        $records['nodes'] = [];
+
+        if ($request->id === '0') {
+            $models = $class::all();
+            $models = $models->count() > 1 ? $models->toHierarchy() : $models;
+        } else {
+            $model = $class::find($request->id);
+            $models = $model->descendants()->limitDepth(1)->get();
+        }
+
+        foreach ($models as $model) {
+            if ($model->isLeaf()) {
+                $type = 'file';
+            } else {
+                $type = 'folder';
+            }
+
+            $records['nodes'][] = [
+                'id'        => $model->id,
+                'parent'    => $model->parent_id,
+                'name'      => $model->name,
+                'level'     => $model->depth,
+                'type'      => $type
+            ];
+        }
+
+        return $records;
+    }
+
+    /**
      * store, flash success or error then redirect or return api result
      *
      * @param $class
