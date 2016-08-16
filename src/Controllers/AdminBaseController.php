@@ -309,25 +309,37 @@ abstract class AdminBaseController extends Controller
      * @param $class
      * @param $request
      * @param array $events
+     * @param string|null $path
      * @return array
      */
-    protected function storeNode($class, $request, $events)
+    protected function storeNode($class, $request, $events, $path = null)
     {
         DB::beginTransaction();
         try {
-            $this->model = $class::create($request->only('name'));
+            $this->model = $class::create($request->all());
             $this->model->setNode($request);
 
             event(new $events['success']($this->model));
             DB::commit();
-            return response()->json([
-                'id'        => $this->model->id,
-                'name'      => $this->model->name
-            ]);
+
+            if (is_null($path)) {
+                return response()->json([
+                    'id' => $this->model->id,
+                    'name' => $this->model->name
+                ]);
+            }
+
+            Flash::success(trans('laravel-modules-base::admin.flash.store_success'));
+            return $this->redirectRoute($path, $this->model);
         } catch (StoreException $e) {
             DB::rollback();
             event(new $events['fail']($e->getDatas()));
-            return response()->json($this->returnData('error'));
+
+            if (is_null($path)) {
+                return response()->json($this->returnData('error'));
+            }
+            Flash::error(trans('laravel-modules-base::admin.flash.store_error'));
+            return $this->redirectRoute($path, $this->model);
         }
     }
 
@@ -590,7 +602,8 @@ abstract class AdminBaseController extends Controller
     {
         if (strpos($path,'index') === false && strpos($path,'.') === false) {
             return redirect( route($this->routePath($path), ['id' => $model->id]) );
-        } else if (strpos($path,'index') === false) {
+        }
+        if (strpos($path,'index') === false) {
             return redirect( route($this->routePath($path), [
                 'id'                    => $this->relatedModelId,
                 $this->modelRouteRegex  => $model->id
