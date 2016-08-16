@@ -135,45 +135,6 @@ abstract class AdminBaseController extends Controller
     }
 
     /**
-     * get nestable nodes
-     *
-     * @param $class
-     * @param $request
-     * @return array
-     */
-    protected function getNodes($class, $request)
-    {
-        $records = [];
-        $records['nodes'] = [];
-
-        if ($request->id === '0') {
-            $models = $class::all();
-            $models = $models->count() > 1 ? $models->toHierarchy() : $models;
-        } else {
-            $model = $class::find($request->id);
-            $models = $model->descendants()->limitDepth(1)->get();
-        }
-
-        foreach ($models as $model) {
-            if ($model->isLeaf()) {
-                $type = 'file';
-            } else {
-                $type = 'folder';
-            }
-
-            $records['nodes'][] = [
-                'id'        => $model->id,
-                'parent'    => $model->parent_id,
-                'name'      => $model->name,
-                'level'     => $model->depth,
-                'type'      => $type
-            ];
-        }
-
-        return $records;
-    }
-
-    /**
      * store, flash success or error then redirect or return api result
      *
      * @param $class
@@ -299,6 +260,102 @@ abstract class AdminBaseController extends Controller
             }
             Flash::error(trans('laravel-modules-base::admin.flash.destroy_error'));
             return $this->redirectRoute($path, $this->model);
+        }
+    }
+
+    /**
+     * get nestable nodes
+     *
+     * @param $class
+     * @param $request
+     * @param integer|null $id
+     * @return array
+     */
+    protected function getNodes($class, $request, $id)
+    {
+        $records = [];
+        $records['nodes'] = [];
+
+        if ($request->id === '0') {
+            $models = is_null($id) ? $class::all() : $class::where('parent_id',$id)->get();
+            $models = $models->count() > 1 ? $models->toHierarchy() : $models;
+        } else {
+            $model = $class::find($request->id);
+            $models = $model->descendants()->limitDepth(1)->get();
+        }
+
+        foreach ($models as $model) {
+            if ($model->isLeaf()) {
+                $type = 'file';
+            } else {
+                $type = 'folder';
+            }
+
+            $records['nodes'][] = [
+                'id'        => $model->id,
+                'parent'    => $model->parent_id,
+                'name'      => $model->name,
+                'level'     => $model->depth,
+                'type'      => $type
+            ];
+        }
+
+        return $records;
+    }
+
+    /**
+     * store nestable node
+     *
+     * @param $class
+     * @param $request
+     * @param array $events
+     * @return array
+     */
+    protected function storeNode($class, $request, $events)
+    {
+        DB::beginTransaction();
+        try {
+            $this->model = $class::create($request->only('name'));
+            $this->model->setNode($request);
+
+            event(new $events['success']($this->model));
+            DB::commit();
+            return response()->json([
+                'id'        => $this->model->id,
+                'name'      => $this->model->name
+            ]);
+        } catch (StoreException $e) {
+            DB::rollback();
+            event(new $events['fail']($e->getDatas()));
+            return response()->json($this->returnData('error'));
+        }
+    }
+
+    /**
+     * move nestable node
+     *
+     * @param $model
+     * @param $request
+     * @param array $events
+     * @return array
+     */
+    protected function moveNode($model, $request, $events)
+    {
+        $this->model = $model;
+        DB::beginTransaction();
+        try {
+            $this->model->setNode($request, 'move');
+
+            event(new $events['success']($this->model));
+            DB::commit();
+            return response()->json([
+                'id'        => $this->model->id,
+                'name'      => $this->model->name
+            ]);
+        } catch (UpdateException $e) {
+            DB::rollback();
+            event(new $events['fail']($e->getDatas()));
+            return response()->json($this->returnData('error'));
         }
     }
 
