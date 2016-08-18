@@ -39,5 +39,7 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
 
         $router = $this->app['router'];
         $router->middleware('permission',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\Permission::class);
+        $router->middleware('nested_model',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\NestedModel::class);
+        $router->middleware('related_model',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\RelatedModel::class);
     }
 }
