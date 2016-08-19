@@ -3,19 +3,60 @@
 namespace ErenMustafaOzdal\LaravelModulesBase\Repositories;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Filesystem\Filesystem;
 
-class FileRepository
+class FileRepository extends Filesystem
 {
+
+    /**
+     * uploaded files path
+     * @var array
+     */
+    public $files = [];
+
+    /**
+     * uploaded file name
+     * @var string
+     */
+    public $fileName;
+
+    /**
+     * uploaded file size
+     * @var integer
+     */
+    public $fileSize;
+
     /*
     |--------------------------------------------------------------------------
-    | File Methods
+    | General Methods
     |--------------------------------------------------------------------------
     */
 
     /**
+     * upload file
+     *
+     * @param $model
+     * @param $request
+     * @param array $configs
+     * @return string|boolean
+     */
+    public function upload($model, $request, $configs)
+    {
+        if ($file = $request->file($configs['file_column'])) {
+            $this->fileName = $this->createFileName($file);
+            $this->fileSize = $file->getClientSize();
+            $path = $this->getUploadPath($model, $configs);
+
+            $file->move($path, $this->fileName);
+            return $this->fileName;
+        }
+        return false;
+    }
+
+    /**
      * create file name
      *
-     * @param UploadedFile $file
+     * @param $file
      * @return string
      */
     public function createFileName($file)
@@ -24,80 +65,19 @@ class FileRepository
         $mime = $file->getClientOriginalExtension();
         $filename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
         $filename = str_slug($filename, "-");
-        $filename = $filename . '_' . time() .  '.' . $mime;
+        $filename = $filename .  '.' . $mime;
         return $filename;
     }
 
     /**
-     * Get the file size of a given file.
+     * get upload path
      *
-     * @param  string  $path
-     * @return int
+     * @param $model
+     * @param array $configs
+     * @return string|\Illuminate\Support\Collection
      */
-    public function size($path)
+    protected function getUploadPath($model, $configs)
     {
-        return File::size($path);
-    }
-
-
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Directory Methods
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * make directory
-     *
-     * @param string $path
-     * @param int $mode
-     * @param bool $recursive
-     * @return boolean
-     */
-    public function makeDirectory($path, $mode = 0775, $recursive = false)
-    {
-        if ( ! File::exists($path)) {
-            File::makeDirectory($path,  $mode, $recursive);
-        }
-        return true;
-    }
-
-    /**
-     * delete directory
-     *
-     * @param string $path
-     * @return bool
-     */
-    public function deleteDirectory($path)
-    {
-        if ( ! $this->isDirectory($path)) {
-            return true;
-        }
-        return File::deleteDirectory($path);
-    }
-
-    /**
-     * is directory
-     *
-     * @param string $path
-     * @return bool
-     */
-    public function isDirectory($path)
-    {
-        return File::isDirectory($path);
-    }
-
-    /**
-     * empty the directory of all files and folders
-     *
-     * @param string $path
-     * @return bool
-     */
-    public function cleanDirectory($path)
-    {
-        return File::cleanDirectory($path);
+        return $configs['path'] . '/' . $model->id;
     }
 }

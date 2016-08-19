@@ -15,12 +15,6 @@ class ImageRepository extends FileRepository
     public $photos = [];
 
     /**
-     * uploaded photo name
-     * @var string
-     */
-    public $photoName;
-
-    /**
      * intervention image object
      * @var Image
      */
@@ -34,10 +28,10 @@ class ImageRepository extends FileRepository
      * @param array $configs
      * @return string|boolean
      */
-    public function uploadPhoto($model, $request, $configs)
+    public function upload($model, $request, $configs)
     {
         if ($photo = $request->file($configs['column'])) {
-            $this->photoName = $this->createFileName($photo);
+            $this->fileName = $this->createFileName($photo);
             $path = $this->getUploadPath($model, $configs);
 
             $this->photos['original'] = $this->original($photo, $path['original']);
@@ -75,8 +69,8 @@ class ImageRepository extends FileRepository
     {
         $this->cleanDirectory($path);
         $this->makeDirectory($path, 0775, true);
-        Image::make( $photo )->encode('jpg')->save($path . '/' . $this->photoName );
-        return '/' . $path . '/' . $this->photoName;
+        Image::make( $photo )->encode('jpg')->save($path . '/' . $this->fileName );
+        return '/' . $path . '/' . $this->fileName;
     }
 
     /**
@@ -94,7 +88,7 @@ class ImageRepository extends FileRepository
         $this->makeDirectory($path, 0775, true);
         $photos = [];
         foreach ($configs['thumbnails'] as $name => $thumb) {
-            $thumb_path = $path . '/' . $name . '_' . $this->photoName;
+            $thumb_path = $path . '/' . $name . '_' . $this->fileName;
             $this->image = Image::make( $photo )
                 ->encode('jpg');
 

@@ -11,7 +11,10 @@
     "autoload": {
         "psr-4": {
             "ErenMustafaOzdal\\LaravelModulesBase\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
     },
     "minimum-stability": "beta",
     "require": {

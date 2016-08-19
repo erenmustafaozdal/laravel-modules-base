@@ -2,7 +2,6 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Yajra\Datatables\Facades\Datatables;
@@ -10,6 +9,7 @@ use Laracasts\Flash\Flash;
 use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use DB;
 
+use ErenMustafaOzdal\LaravelModulesBase\Repositories\FileRepository;
 use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
 // exceptions
 use ErenMustafaOzdal\LaravelModulesBase\Exceptions\StoreException;
@@ -49,10 +49,10 @@ abstract class AdminBaseController extends Controller
     protected $modelRouteRegex = null;
 
     /**
-     * if is use image repository, image repository object
-     * @var ImageRepository
+     * if is use image or file repository, image or file repository object
+     * @var ImageRepository|FileRepository
      */
-    protected $imageRepo;
+    protected $repo;
 
     /**
      * get Datatables
@@ -140,15 +140,17 @@ abstract class AdminBaseController extends Controller
      * @param $class
      * @param $request
      * @param array $events
-     * @param array $imageOptions
+     * @param array $fileOptions
      * @param string|null $path
+     * @param boolean $isFile
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function storeModel($class, $request, $events, $imageOptions = [], $path = null)
+    public function storeModel($class, $request, $events, $fileOptions = [], $path = null, $isFile = false)
     {
+        $column = $isFile ? 'file_column' : 'column';
         DB::beginTransaction();
         try {
-            $datas = $imageOptions ? $request->except($imageOptions['column']) : $request->all();
+            $datas = $fileOptions ? $request->except($fileOptions[$column]) : $request->all();
             $this->model = $class::create($datas);
 
             if ( ! isset($this->model->id)) {
@@ -160,9 +162,9 @@ abstract class AdminBaseController extends Controller
                 $this->activationComplete($this->model, $events);
             }
 
-            if ($imageOptions && $request->has($imageOptions['column'])){
-                $datas = $this->getData($request, $imageOptions);
-                $this->model->fill([$imageOptions['column'] => $datas[$imageOptions['column']]]);
+            if ($fileOptions && $request->file($fileOptions[$column])){
+                $datas = $this->getData($request, $fileOptions, $isFile);
+                $this->model->fill($datas);
 
                 if (! $this->model->save()) {
                     throw new StoreException($request->all());
@@ -173,7 +175,7 @@ abstract class AdminBaseController extends Controller
             DB::commit();
 
             if (is_null($path)) {
-                return response()->json($this->returnData('success', $imageOptions));
+                return response()->json($this->returnData('success', $fileOptions, $isFile));
             }
             Flash::success(trans('laravel-modules-base::admin.flash.store_success'));
             return $this->redirectRoute($path, $this->model);
@@ -182,7 +184,7 @@ abstract class AdminBaseController extends Controller
             event(new $events['fail']($e->getDatas()));
 
             if (is_null($path)) {
-                return response()->json($this->returnData('error', $imageOptions));
+                return response()->json($this->returnData('error', $fileOptions, $isFile));
             }
             Flash::error(trans('laravel-modules-base::admin.flash.store_error'));
             return $this->redirectRoute($path, $this->model);
@@ -195,16 +197,17 @@ abstract class AdminBaseController extends Controller
      * @param $model
      * @param $request
      * @param array $events
-     * @param array $imageOptions
+     * @param array $fileOptions
      * @param string|null $path
+     * @param boolean $isFile
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function updateModel($model, $request, $events, $imageOptions = [], $path = null)
+    public function updateModel($model, $request, $events, $fileOptions = [], $path = null, $isFile = false)
     {
         $this->model = $model;
         DB::beginTransaction();
         try {
-            $this->model->fill($this->getData($request, $imageOptions));
+            $this->model->fill($this->getData($request, $fileOptions, $isFile));
             if ( ! $this->model->save()) {
                 throw new UpdateException($this->model);
             }
@@ -213,7 +216,7 @@ abstract class AdminBaseController extends Controller
             DB::commit();
 
             if (is_null($path)) {
-                return response()->json($this->returnData('success', $imageOptions));
+                return response()->json($this->returnData('success', $fileOptions, $isFile));
             }
             Flash::success(trans('laravel-modules-base::admin.flash.update_success'));
             return $this->redirectRoute($path, $this->model);
@@ -222,7 +225,7 @@ abstract class AdminBaseController extends Controller
             event(new $events['fail']($e->getDatas()));
 
             if (is_null($path)) {
-                return response()->json($this->returnData('error', $imageOptions));
+                return response()->json($this->returnData('error', $fileOptions, $isFile));
             }
             Flash::error(trans('laravel-modules-base::admin.flash.update_error'));
             return $this->redirectRoute($path, $this->model);
@@ -560,18 +563,24 @@ abstract class AdminBaseController extends Controller
      * Get data, if image column is passed, upload it
      *
      * @param $request
-     * @param array $imageOptions
+     * @param array $fileOptions
+     * @param boolean $isFile
      * @return mixed
      */
-    protected function getData($request, $imageOptions)
+    protected function getData($request, $fileOptions, $isFile = false)
     {
-        if ( ! $imageOptions || ! $request->file($imageOptions['column'])){
+        $column = $isFile ? 'file_column' : 'column';
+        if ( ! $fileOptions || is_null($request->file($fileOptions[$column]))){
             return $request->all();
         }
-        $this->imageRepo = new ImageRepository();
-        $datas = $request->except($imageOptions['column']);
-        $this->imageRepo->uploadPhoto($this->model, $request, $imageOptions);
-        $datas[$imageOptions['column']] = $this->imageRepo->photoName;
+        $this->repo = $isFile ? new FileRepository() : new ImageRepository();
+        $datas = $request->except($fileOptions[$column]);
+        $this->repo->upload($this->model, $request, $fileOptions);
+        $datas[$fileOptions[$column]] = $this->repo->fileName;
+        // data içine size bilgisi de işlenir
+        if ($isFile) {
+            $datas['size'] = $this->repo->fileSize;
+        }
         return $datas;
     }
 
@@ -579,14 +588,17 @@ abstract class AdminBaseController extends Controller
      * return data for api
      *
      * @param string $type
-     * @param array $imageOptions
+     * @param array $fileOptions
+     * @param boolean $isFile
      * @return array
      */
-    protected function returnData($type, $imageOptions = [])
+    protected function returnData($type, $fileOptions = [], $isFile = false)
     {
         $data = ['result' => $type];
-        if ($imageOptions){
-            $data['photos'] = $this->imageRepo->photos;
+        if ( ! is_null($this->repo) && $fileOptions && ! $isFile){
+            $data['photos'] = $this->repo->photos;
+        } else if ( ! is_null($this->repo) && $fileOptions && $isFile) {
+            $data['files'] = $this->repo->files;
         }
         return $data;
     }
