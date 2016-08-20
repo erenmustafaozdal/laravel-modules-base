@@ -2,6 +2,7 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase;
 
+use ErenMustafaOzdal\LaravelModulesBase\Services\CollectionService;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelModulesBaseServiceProvider extends ServiceProvider
@@ -41,5 +42,25 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $router->middleware('permission',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\Permission::class);
         $router->middleware('nested_model',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\NestedModel::class);
         $router->middleware('related_model',\ErenMustafaOzdal\LaravelModulesBase\Middlewares\RelatedModel::class);
+
+        // register services
+        $this->registerCollectionService();
+
+        $this->app->booting(function() {
+            $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+            $loader->alias('LMBCollection', 'ErenMustafaOzdal\LaravelModulesBase\Facades\Collection');
+        });
+    }
+
+    /**
+     * Registers the collection service
+     *
+     * @return void
+     */
+    protected function registerCollectionService()
+    {
+        $this->app->singleton('laravelmodulesbase.collection', function ($app) {
+            return new CollectionService();
+        });
     }
 }
