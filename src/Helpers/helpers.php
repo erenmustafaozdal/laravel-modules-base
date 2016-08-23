@@ -24,3 +24,91 @@ if (! function_exists('humanFileSize')) {
         return round($byte, $decimals).$units[$i];
     }
 }
+
+
+
+/*
+|--------------------------------------------------------------------------
+| get model slug name
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('getModelSlug')) {
+    /**
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @return string
+     */
+    function getModelSlug($model)
+    {
+        return snake_case( substr( strrchr( get_class($model), '\\' ), 1 ) );
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| get module snake case
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('getModule')) {
+    /**
+     * @param string $action
+     * @return string
+     */
+    function getModule($action)
+    {
+        $path_args = explode('\\', $action);
+        if ($path_args[0] !== 'ErenMustafaOzdal') {
+            $path_args = explode('@', $action);
+            $parent_action = get_parent_class( new $path_args[0]() );
+            $path_args = explode('\\', $parent_action);
+        }
+
+        $module = snake_case($path_args[1]);
+        return str_replace('_','-',$module);
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| get module specific base name
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('getBaseName')) {
+    /**
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string $subBase
+     * @return string
+     */
+    function getBaseName($model, $subBase = '')
+    {
+        $class = is_string($model) ? $model : get_class($model);
+        $baseName = class_basename($class);
+        $moduleName = studly_case( getModule($class) );
+        $namespace  = "\\ErenMustafaOzdal\\{$moduleName}";
+        $namespace .= $subBase ? "\\{$subBase}" : "";
+        return $namespace . "\\{$baseName}";
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Debug Backtrace (deBack) Methods
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('deBackFunction')) {
+    /**
+     * get the caller function in the debug backtrace
+     *
+     * @param array $trace
+     * @return string
+     */
+    function deBackFunction($trace)
+    {
+        return $trace[1]['function'];
+    }
+}

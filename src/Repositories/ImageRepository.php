@@ -21,36 +21,41 @@ class ImageRepository extends FileRepository
     private $image;
 
     /**
-     * upload photo
+     * class constructor method
      *
-     * @param $model
-     * @param $request
-     * @param array $configs
-     * @return string|boolean
+     * @param array $options
      */
-    public function upload($model, $request, $configs)
+    public function __construct(array $options)
     {
-        if ($photo = $request->file($configs['column'])) {
-            $this->fileName = $this->createFileName($photo);
-            $path = $this->getUploadPath($model, $configs);
+        parent::__construct($options);
+    }
 
-            $this->photos['original'] = $this->original($photo, $path['original']);
-            $this->photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request, $configs);
-            return $this->photos;
-        }
-        return false; // request is not file
+    /**
+     * move upload file
+     *
+     * @param $photo
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    public function moveFile($photo, $model, $request)
+    {
+        $path = $this->getUploadPath($model, $this->options);
+
+        $this->photos['original'] = $this->original($photo, $path['original']);
+        $this->photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request, $this->options);
+        return $this->photos;
     }
 
     /**
      * get upload path
      *
      * @param $model
-     * @param array $configs
      * @return string|\Illuminate\Support\Collection
      */
-    protected function getUploadPath($model, $configs)
+    protected function getUploadPath($model)
     {
-        $path = $configs['path'] . '/' . $model->id;
+        $path = $this->options['path'] . '/' . $model->id;
 
         $paths = [];
         $paths['original'] = $path . '/original';
@@ -67,8 +72,7 @@ class ImageRepository extends FileRepository
      */
     protected function original($photo, $path)
     {
-        $this->cleanDirectory($path);
-        $this->makeDirectory($path, 0775, true);
+        $this->makeDirectoryBeforeUpload($path, false);
         Image::make( $photo )->encode('jpg')->save($path . '/' . $this->fileName );
         return '/' . $path . '/' . $this->fileName;
     }
@@ -79,15 +83,13 @@ class ImageRepository extends FileRepository
      * @param $photo
      * @param array $path
      * @param $request
-     * @param array $configs
      * @return string
      */
-    protected function thumbnails($photo, $path, $request, $configs)
+    protected function thumbnails($photo, $path, $request)
     {
-        $this->cleanDirectory($path);
-        $this->makeDirectory($path, 0775, true);
+        $this->makeDirectoryBeforeUpload($path, false);
         $photos = [];
-        foreach ($configs['thumbnails'] as $name => $thumb) {
+        foreach ($this->options['thumbnails'] as $name => $thumb) {
             $thumb_path = $path . '/' . $name . '_' . $this->fileName;
             $this->image = Image::make( $photo )
                 ->encode('jpg');

@@ -10,17 +10,27 @@ trait ModelDataTrait
      * @param array $attributes
      * @param string $type  original or thumbnails key
      * @param boolean $onlyUrl
+     * @param string|null $modelSlug
+     * @param string|null $relation
      * @return string
      */
-    public function getPhoto($attributes = [], $type='original', $onlyUrl = false)
+    public function getPhoto($attributes = [], $type='original', $onlyUrl = false, $modelSlug = null, $relation = null)
     {
-        dd('bu trait sınıfını düzenle');
+        $module = getModule(get_class($this));
+        $modelSlug = is_null($modelSlug) ? getModelSlug($this) : $modelSlug;
+        $options = config("{$module}.{$modelSlug}.uploads.photo");
+        $column = $options['column'];
+
         if( ! is_null($this->photo)) {
-            $src  = config('laravel-user-module.user.uploads.path')."/{$this->id}/";
-            $src .= $type === 'original' ? "original/{$this->photo}" : "thumbnails/{$type}_{$this->photo}";
+            $columnParams = explode('.',$column);
+            $photo = count($columnParams) == 1 ? $this->$column : $this->$columnParams[1];
+
+            $id = is_null($relation) ? $this->id : $this->$relation->id;
+            $src  = $options['path']."/{$id}/";
+            $src .= $type === 'original' ? "original/{$photo}" : "thumbnails/{$type}_{$photo}";
         } else {
             $type = $type === 'original' ? 'biggest' : $type;
-            $src = config('laravel-user-module.user.avatar_path') . "/{$type}.jpg";
+            $src = config("{$module}.{$modelSlug}.default_img_path") . "/{$type}.jpg";
         }
 
         $attr = '';
