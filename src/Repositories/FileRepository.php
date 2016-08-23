@@ -33,6 +33,12 @@ class FileRepository extends Filesystem
     public $fileSize;
 
     /**
+     * elfinder file path
+     * @var string
+     */
+    public $elfinderFilePath;
+
+    /**
      * class constructor method
      *
      * @param array $options
@@ -58,11 +64,19 @@ class FileRepository extends Filesystem
     public function upload($model, $request)
     {
         $columns = explode('.',$this->options['column']);
-        $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
+        // elfinder veya fileinput durumuna göre file belirlenir
+        $isElfinder = isset($this->options['isElfinder']) && $this->options['isElfinder'];
+        if ($isElfinder) {
+            $file = count($columns) > 1 ? $request->input($columns[1]) : $request->input($columns[0]);
+            $this->elfinderFilePath = public_path($file);
+        } else {
+            $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
+        }
+
         if ($file) {
-            $this->fileName = $this->createFileName($file);
-            $this->fileSize = $file->getClientSize();
-            return $this->moveFile($file,$model, $request);
+            $this->fileName = $this->createFileName($file, $isElfinder);
+            $this->fileSize = $isElfinder ? $this->getFileSize() : $file->getClientSize();
+            return $this->moveFile($file, $model, $isElfinder);
         }
         return false;
     }
@@ -72,14 +86,20 @@ class FileRepository extends Filesystem
      *
      * @param $file
      * @param \Illuminate\Database\Eloquent\Model $model
-     * @param \Illuminate\Http\Request $request
+     * @param boolean $isElfinder
      * @return string
      */
-    public function moveFile($file, $model, $request)
+    public function moveFile($file, $model, $isElfinder)
     {
         $path = $this->getUploadPath($model, $this->options);
         $this->makeDirectoryBeforeUpload($path, true);
-        $file->move($path, $this->fileName);
+
+        if ($isElfinder) {
+            $this->copy($this->elfinderFilePath, $path . '/' . $this->fileName);
+        } else {
+            $this->move($file, $path . '/' . $this->fileName);
+        }
+
         return $this->fileName;
     }
 
@@ -87,16 +107,43 @@ class FileRepository extends Filesystem
      * create file name
      *
      * @param $file
+     * @param boolean $isElfinder
      * @return string
      */
-    public function createFileName($file)
+    public function createFileName($file, $isElfinder)
     {
+        if ($isElfinder) {
+            return $this->getFileName();
+        }
+
         $filename = $file->getClientOriginalName();
         $mime = $file->getClientOriginalExtension();
         $filename = preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
         $filename = str_slug($filename, "-");
         $filename = $filename .  '.' . $mime;
         return $filename;
+    }
+
+    /**
+     * get file size of the elfinder file
+     *
+     * @return integer
+     */
+    public function getFileSize()
+    {
+        return $this->size($this->elfinderFilePath);
+    }
+
+    /**
+     * get file name of the elfinder file
+     *
+     * @return string
+     */
+    public function getFileName()
+    {
+        $filename = substr( strrchr( $this->elfinderFilePath, '/' ), 1 );
+        $parts = explode('.',$filename);
+        return str_slug($parts[0]) . '.' . $parts[1];
     }
 
     /**

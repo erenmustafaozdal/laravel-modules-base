@@ -429,6 +429,22 @@ trait OperationTrait
     }
 
     /**
+     * set to file options is file from elfinder
+     *
+     * @param string $column
+     */
+    protected function setElfinderToOptions($column)
+    {
+        $this->fileOptions = collect($this->fileOptions)->map(function($item, $key) use($column)
+        {
+            if ($item['column'] === $column) {
+                $item['isElfinder'] = true;
+            }
+            return $item;
+        })->all();
+    }
+
+    /**
      * set the events
      *
      * @param array $events
