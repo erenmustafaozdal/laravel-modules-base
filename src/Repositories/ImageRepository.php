@@ -39,20 +39,12 @@ class ImageRepository extends FileRepository
      */
     public function upload($model, $request)
     {
-        $columns = explode('.',$this->options['column']);
-        // elfinder veya fileinput durumuna göre file belirlenir
-        $isElfinder = isset($this->options['isElfinder']) && $this->options['isElfinder'];
-        if ($isElfinder) {
-            $file = count($columns) > 1 ? $request->input($columns[1]) : $request->input($columns[0]);
-            $file = $this->elfinderFilePath = public_path($file);
-        } else {
-            $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
-        }
+        $file = $this->getFile($request);
 
         if ($file) {
-            $this->fileName = $this->createFileName($file, $isElfinder);
-            $this->fileSize = $isElfinder ? $this->getFileSize() : $file->getClientSize();
-            return $this->moveImage($file, $model, $request, $isElfinder);
+            $this->setFileName($file);
+            $this->setFileSize($file);
+            return $this->moveImage($file, $model, $request);
         }
         return false;
     }
@@ -63,10 +55,9 @@ class ImageRepository extends FileRepository
      * @param $photo
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param \Illuminate\Http\Request $request
-     * @param boolean $isElfinder
      * @return array
      */
-    public function moveImage($photo, $model, $request, $isElfinder)
+    public function moveImage($photo, $model, $request)
     {
         $path = $this->getUploadPath($model, $this->options);
 
