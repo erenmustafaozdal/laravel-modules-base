@@ -36,10 +36,9 @@ trait OperationNodeTrait
      * store nestable node
      *
      * @param $class
-     * @param string|null $path
      * @return array
      */
-    protected function storeNode($class, $path = null)
+    protected function storeNode($class)
     {
         DB::beginTransaction();
         try {
@@ -49,24 +48,15 @@ trait OperationNodeTrait
             event(new $this->events['success']($this->model));
             DB::commit();
 
-            if (is_null($path)) {
-                return response()->json([
-                    'id' => $this->model->id,
-                    'name' => $this->model->name
-                ]);
-            }
-
-            Flash::success(trans('laravel-modules-base::admin.flash.store_success'));
-            return $this->redirectRoute($path);
+            return response()->json([
+                'id' => $this->model->id,
+                'name' => $this->model->name
+            ]);
         } catch (StoreException $e) {
             DB::rollback();
             event(new $this->events['fail']($e->getDatas()));
 
-            if (is_null($path)) {
-                return response()->json($this->returnData('error'));
-            }
-            Flash::error(trans('laravel-modules-base::admin.flash.store_error'));
-            return $this->redirectRoute($path);
+            return response()->json($this->returnData('error'));
         }
     }
 

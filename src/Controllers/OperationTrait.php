@@ -184,7 +184,7 @@ trait OperationTrait
             }
 
             Flash::success(trans('laravel-modules-base::admin.flash.update_success'));
-            return $this->redirectRoute($path);
+            return $this->redirectRoute($path, true); // yeni ilişkili kategoriye göre git
         } catch (UpdateException $e) {
             DB::rollback();
             event(new $this->events['fail']($e->getDatas()));
@@ -307,7 +307,7 @@ trait OperationTrait
             // hasOne relation
             if ($key === 'hasOne') {
                 if (is_null($this->model->$relation)) {
-                    $this->model->$relation()->save($group['datas']);
+                    $this->model->$relation()->save(new $group['relation_model']( $group['datas'] ));
                     return true;
                 }
                 $this->model->$relation->fill($group['datas'])->save();
@@ -398,9 +398,10 @@ trait OperationTrait
      * return redirect url path
      *
      * @param string $path
+     * @param boolean $isUpdate
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function redirectRoute($path)
+    protected function redirectRoute($path, $isUpdate = false)
     {
         $indexPos = strpos($path,'index');
         $dotPos = strpos($path,'.');
@@ -413,8 +414,9 @@ trait OperationTrait
 
         // İlişkili sayfalardan index hariç
         if( $indexPos === false ) {
+            $id = $isUpdate ? $this->model->category_id : $this->relatedId;
             return redirect( route("admin.{$path}", [
-                'id'                => $this->relatedId,
+                'id'                => $id,
                 $this->routeRegex   => $this->model->id
             ]) );
         }
