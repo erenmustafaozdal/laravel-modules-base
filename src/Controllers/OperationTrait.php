@@ -296,24 +296,34 @@ trait OperationTrait
         $grouped = collect($datas)->groupBy('relation_type');
         foreach($grouped as $key => $group) {
             $group = $group->collapse()->all();
-            switch ($key) {
-                case 'not':
-                    $this->model->fill($group['datas'])->save();
-                    break;
-                case 'hasOne':
-                    $relation = $group['relation'];
-                    $relationModel = new $group['relation_model']($group['datas']);
-                    $this->model->$relation()->save($relationModel);
-                    break;
-                case 'hasMany':
-                    $relation = $group['relation'];
-                    $relation_models = [];
-                    foreach($group['datas'] as $data) {
-                        $relation_models[] = new $group['relation_model']($data);
-                    }
-                    $this->model->$relation()->saveMany($relation_models);
-                    break;
+
+            // no relation
+            if ($key === 'not') {
+                $this->model->fill($group['datas'])->save();
+                return true;
             }
+
+            $relation = $group['relation'];
+            // hasOne relation
+            if ($key === 'hasOne') {
+                if (is_null($this->model->$relation)) {
+                    $this->model->$relation()->save($group['datas']);
+                    return true;
+                }
+                $this->model->$relation->fill($group['datas'])->save();
+                return true;
+            }
+
+            // hasMany relation
+            if ($key === 'hasMany') {
+                $relation_models = [];
+                foreach($group['datas'] as $data) {
+                    $relation_models[] = new $group['relation_model']($data);
+                }
+                $this->model->$relation()->saveMany($relation_models);
+                return true;
+            }
+            return false;
         }
         return true;
     }
