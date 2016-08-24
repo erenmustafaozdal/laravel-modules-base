@@ -96,9 +96,9 @@ trait OperationTrait
     /**
      * trait constructor method
      *
-     * @param Request $request
+     * @param Request|null $request
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request = null)
     {
         $this->request = $request;
     }

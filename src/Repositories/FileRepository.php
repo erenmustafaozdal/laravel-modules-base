@@ -244,8 +244,8 @@ class FileRepository extends Filesystem
     {
         // tamamen silip oluşturmak istendi ise
         if ($this->exists($path) && $cleanDirectory) {
-            $this->deleteDirectory($path, $cleanDirectory);
-            $this->makeDirectory($path, 0775, true);
+            $this->deleteDirectory($path, true);
+            $this->makeDirectory($path, 0775, true, true);
             return true;
         }
 
