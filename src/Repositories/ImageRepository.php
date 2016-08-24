@@ -31,14 +31,33 @@ class ImageRepository extends FileRepository
     }
 
     /**
-     * move upload file
+     * upload file
+     *
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param $request
+     * @return string|boolean
+     */
+    public function upload($model, $request)
+    {
+        $file = $this->getFile($request);
+
+        if ($file) {
+            $this->setFileName($file);
+            $this->setFileSize($file);
+            return $this->moveImage($file, $model, $request);
+        }
+        return false;
+    }
+
+    /**
+     * move upload image
      *
      * @param $photo
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function moveFile($photo, $model, $request)
+    public function moveImage($photo, $model, $request)
     {
         $path = $this->getUploadPath($model, $this->options);
 
