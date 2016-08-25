@@ -154,9 +154,10 @@ trait OperationTrait
      *
      * @param $model
      * @param string|null $path
+     * @param boolean $updateRelation
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function updateModel($model, $path = null)
+    protected function updateModel($model, $path = null, $updateRelation = false)
     {
         $this->model = $model;
         DB::beginTransaction();
@@ -184,7 +185,7 @@ trait OperationTrait
             }
 
             Flash::success(trans('laravel-modules-base::admin.flash.update_success'));
-            return $this->redirectRoute($path, true); // yeni ilişkili kategoriye göre git
+            return $this->redirectRoute($path, $updateRelation); // yeni ilişkili kategoriye göre git
         } catch (UpdateException $e) {
             DB::rollback();
             event(new $this->events['fail']($e->getDatas()));
