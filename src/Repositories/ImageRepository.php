@@ -59,10 +59,10 @@ class ImageRepository extends FileRepository
      */
     public function moveImage($photo, $model, $request)
     {
-        $path = $this->getUploadPath($model, $this->options);
+        $path = $this->getUploadPath($model);
 
         $this->photos['original'] = $this->original($photo, $path['original']);
-        $this->photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request, $this->options);
+        $this->photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request);
         return $this->photos;
     }
 
@@ -72,7 +72,7 @@ class ImageRepository extends FileRepository
      * @param $model
      * @return string|\Illuminate\Support\Collection
      */
-    protected function getUploadPath($model)
+    public function getUploadPath($model)
     {
         $path = $this->options['path'] . '/' . $model->id;
 
