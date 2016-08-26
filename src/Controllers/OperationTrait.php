@@ -295,33 +295,39 @@ trait OperationTrait
     protected function fillModel($datas)
     {
         $grouped = collect($datas)->groupBy('relation_type');
-        foreach($grouped as $key => $group) {
-            $group = $group->collapse()->all();
+        foreach($grouped as $key => $groups) {
 
             // no relation
             if ($key === 'not') {
-                $this->model->fill($group['datas'])->save();
+                foreach($groups as $group) {
+                    $this->model->fill($group['datas'])->save();
+                }
                 continue;
             }
 
-            $relation = $group['relation'];
             // hasOne relation
             if ($key === 'hasOne') {
-                if (is_null($this->model->$relation)) {
-                    $this->model->$relation()->save(new $group['relation_model']( $group['datas'] ));
-                    continue;
+                foreach($groups as $group) {
+                    $relation = $group['relation'];
+                    if (is_null($this->model->$relation)) {
+                        $this->model->$relation()->save(new $group['relation_model']($group['datas']));
+                        continue;
+                    }
+                    $this->model->$relation->fill($group['datas'])->save();
                 }
-                $this->model->$relation->fill($group['datas'])->save();
                 continue;
             }
 
             // hasMany relation
             if ($key === 'hasMany') {
-                $relation_models = [];
-                foreach($group['datas'] as $data) {
-                    $relation_models[] = new $group['relation_model']($data);
+                foreach($groups as $group) {
+                    $relation = $group['relation'];
+                    $relation_models = [];
+                    foreach ($group['datas'] as $data) {
+                        $relation_models[] = new $group['relation_model']($data);
+                    }
+                    $this->model->$relation()->saveMany($relation_models);
                 }
-                $this->model->$relation()->saveMany($relation_models);
                 continue;
             }
             return false;
@@ -338,6 +344,10 @@ trait OperationTrait
             return $this->request->all();
         }
         $excepts = collect($this->fileOptions)->implode('column', ',');
+        $excepts = collect($this->fileOptions)->keyBy(function ($item) {
+            $columns = explode('.', $item['column']);
+            return count($columns) === 1 ? $columns[0] : $columns[1];
+        })->keys()->all();
         return $this->request->except($excepts);
     }
 
@@ -350,10 +360,13 @@ trait OperationTrait
     {
         $datas = [];
         foreach($this->fileOptions as $options) {
-            $datas[] = $this->uploadFile($options);
+            $result = $this->uploadFile($options);
+            if ($result !== false) {
+                $datas[] = $result;
+            }
         }
 
-        if (! $this->fillModel($datas)) {
+        if ( ! empty($datas) && ! $this->fillModel($datas)) {
             throw new $exception($this->request->all());
         }
     }
@@ -362,7 +375,7 @@ trait OperationTrait
      * upload file or files
      *
      * @param array $options
-     * @return array
+     * @return array|boolean
      */
     protected function uploadFile($options)
     {
@@ -374,7 +387,9 @@ trait OperationTrait
             $this->hasPhoto = true;
         }
 
-        $this->repo->upload($this->model, $this->request);
+        if ( ! $this->repo->upload($this->model, $this->request) ) {
+            return false;
+        }
         return $this->repo->getDatas();
     }
 
