@@ -9,12 +9,6 @@ use ErenMustafaOzdal\LaravelModulesBase\Repositories\FileRepository;
 class ImageRepository extends FileRepository
 {
     /**
-     * uploaded photos path
-     * @var array
-     */
-    public $photos = [];
-
-    /**
      * intervention image object
      * @var Image
      */
@@ -39,12 +33,15 @@ class ImageRepository extends FileRepository
      */
     public function upload($model, $request)
     {
-        $file = $this->getFile($request);
+        $files = $this->getFile($request);
 
-        if ($file) {
-            $this->setFileName($file);
-            $this->setFileSize($file);
-            return $this->moveImage($file, $model, $request);
+        if ($files) {
+            foreach($files as $file) {
+                $this->setFileName($file);
+                $this->setFileSize($file);
+                $this->files[] = $this->moveImage($file, $model, $request);
+            }
+            return count($this->files) === 1 ? $this->files[0] : $this->files;
         }
         return false;
     }
@@ -61,9 +58,11 @@ class ImageRepository extends FileRepository
     {
         $path = $this->getUploadPath($model);
 
-        $this->photos['original'] = $this->original($photo, $path['original']);
-        $this->photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request);
-        return $this->photos;
+        $photos['fileName'] = $this->fileName;
+        $photos['fileSize'] = $this->fileSize;
+        $photos['original'] = $this->original($photo, $path['original']);
+        $photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request);
+        return $photos;
     }
 
     /**
@@ -130,8 +129,9 @@ class ImageRepository extends FileRepository
     private function resizeImage($request, $thumbnail)
     {
         if ( ! $request->has('width') && ! $request->has('height')) {
-            $this->image->fit($thumbnail['width'], $thumbnail['height'], function($constraint)
+            $this->image->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
+                $constraint->aspectRatio();
                 $constraint->upsize();
             });
             return;

@@ -63,12 +63,15 @@ class FileRepository extends Filesystem
      */
     public function upload($model, $request)
     {
-        $file = $this->getFile($request);
+        $files = $this->getFile($request);
 
-        if ($file) {
-            $this->setFileName($file);
-            $this->setFileSize($file);
-            return $this->moveFile($file, $model);
+        if ($files) {
+            foreach($files as $file) {
+                $this->setFileName($file);
+                $this->setFileSize($file);
+                $this->files[] = $this->moveFile($file, $model);
+            }
+            return $this->files;
         }
         return false;
     }
@@ -91,7 +94,10 @@ class FileRepository extends Filesystem
             $this->move($file, $path . '/' . $this->fileName);
         }
 
-        return $this->fileName;
+        return [
+            'fileName'  => $this->fileName,
+            'fileSize'  => $this->fileSize
+        ];
     }
 
     /**
@@ -145,9 +151,11 @@ class FileRepository extends Filesystem
         $columns = explode('.',$this->options['column']);
         if ( isset($this->options['isElfinder']) && $this->options['isElfinder'] ) {
             $file = count($columns) > 1 ? $request->input($columns[1]) : $request->input($columns[0]);
-            return $this->elfinderFilePath = public_path($file);
+            $this->elfinderFilePath = public_path($file);
+        } else {
+            $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
         }
-        return count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
+        return is_array($file) ? $file : [$file];
     }
 
     /**
@@ -199,14 +207,19 @@ class FileRepository extends Filesystem
                 ]
             ];
         }
+        $datas = [];
+        foreach ($this->files as $file) {
+            $datas[] = [
+                $columnParams[1]    => $file['fileName'],
+                'size'              => $file['fileSize']
+            ];
+        }
+
         return  [
-            'relation_type'         => $relation,
-            'relation'              => $columnParams[0],
-            'relation_model'        => $this->options['relation_model'],
-            'datas' => [
-                $columnParams[1]    => $this->fileName,
-                'size'              => $this->fileSize
-            ]
+            'relation_type'     => $relation,
+            'relation'          => $columnParams[0],
+            'relation_model'    => $this->options['relation_model'],
+            'datas'             => $relation === 'hasOne' ? $datas[0] : $datas
         ];
     }
 
@@ -242,6 +255,11 @@ class FileRepository extends Filesystem
      */
     public function makeDirectoryBeforeUpload($path, $cleanDirectory = false)
     {
+        if (! $this->exists($path)) {
+            $this->makeDirectory($path, 0775, true);
+            return true;
+        }
+
         // tamamen silip oluşturmak istendi ise
         if ($this->exists($path) && $cleanDirectory) {
             $this->deleteDirectory($path, true);
@@ -249,10 +267,9 @@ class FileRepository extends Filesystem
             return true;
         }
 
-        if (! $this->exists($path)) {
-            $this->makeDirectory($path, 0775, true);
-            return true;
+        if ($this->options['relation'] !== 'hasMany') {
+            $this->cleanDirectory($path);
         }
-        $this->cleanDirectory($path);
+        return true;
     }
 }

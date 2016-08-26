@@ -301,7 +301,7 @@ trait OperationTrait
             // no relation
             if ($key === 'not') {
                 $this->model->fill($group['datas'])->save();
-                return true;
+                continue;
             }
 
             $relation = $group['relation'];
@@ -309,10 +309,10 @@ trait OperationTrait
             if ($key === 'hasOne') {
                 if (is_null($this->model->$relation)) {
                     $this->model->$relation()->save(new $group['relation_model']( $group['datas'] ));
-                    return true;
+                    continue;
                 }
                 $this->model->$relation->fill($group['datas'])->save();
-                return true;
+                continue;
             }
 
             // hasMany relation
@@ -322,7 +322,7 @@ trait OperationTrait
                     $relation_models[] = new $group['relation_model']($data);
                 }
                 $this->model->$relation()->saveMany($relation_models);
-                return true;
+                continue;
             }
             return false;
         }
@@ -352,6 +352,7 @@ trait OperationTrait
         foreach($this->fileOptions as $options) {
             $datas[] = $this->uploadFile($options);
         }
+
         if (! $this->fillModel($datas)) {
             throw new $exception($this->request->all());
         }
@@ -387,7 +388,7 @@ trait OperationTrait
     {
         $data = ['result' => $type];
         if ( $this->hasPhoto ){
-            $data['photos'] = $this->repo->photos;
+            $data['photos'] = $this->repo->files;
         }
         if ( $this->hasFile ) {
             $data['files'] = $this->repo->files;
