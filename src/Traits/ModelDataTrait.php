@@ -138,4 +138,28 @@ trait ModelDataTrait
         }
         return $attr;
     }
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model get and set attribute
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the link attribute.
+     *
+     * @return string
+     */
+    public function getHtmlLinkAttribute()
+    {
+        if (is_null($this->link) || is_null($this->link->link)) {
+            return '';
+        }
+        return "<a href='{$this->link->link}' target='_blank'> {$this->link->link} </a>";
+    }
 }

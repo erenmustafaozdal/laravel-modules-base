@@ -65,7 +65,7 @@ class FileRepository extends Filesystem
     {
         $files = $this->getFile($request);
 
-        if ($files) {
+        if (array_search(null,$files) === false) {
             foreach($files as $file) {
                 $this->setFileName($file);
                 $this->setFileSize($file);
