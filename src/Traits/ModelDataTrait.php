@@ -2,6 +2,8 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Traits;
 
+use Carbon\Carbon;
+
 trait ModelDataTrait
 {
     /**
@@ -149,6 +151,131 @@ trait ModelDataTrait
     | Model get and set attribute
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Get the name uc first attribute.
+     *
+     * @param  string $name
+     * @return string
+     */
+    public function getNameUcFirstAttribute($name)
+    {
+        return ucfirst_tr($name);
+    }
+
+    /**
+     * Set slug encrypted
+     *
+     * @param $slug
+     */
+    public function setSlugAttribute($slug)
+    {
+        if ( ! $slug) {
+            $slug = str_slug($this->name, '-');
+        }
+        $this->attributes['slug'] =  $slug;
+    }
+
+    /**
+     * Get the title uc first attribute.
+     *
+     * @param  string $title
+     * @return string
+     */
+    public function getTitleUcFirstAttribute($title)
+    {
+        return ucfirst_tr($title);
+    }
+
+    /**
+     * Set the is_publish attribute.
+     *
+     * @param boolean $is_publish
+     * @return string
+     */
+    public function setIsPublishAttribute($is_publish)
+    {
+        $this->attributes['is_publish'] = $is_publish == 1 || $is_publish === 'true' || $is_publish === true ? true : false;
+    }
+
+    /**
+     * Get the is_publish attribute.
+     *
+     * @param boolean $is_publish
+     * @return string
+     */
+    public function getIsPublishAttribute($is_publish)
+    {
+        return $is_publish == 1 ? true : false;
+    }
+
+    /**
+     * Get the created_at attribute.
+     *
+     * @param  $date
+     * @return string
+     */
+    public function getCreatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->format(config('laravel-user-module.date_format'));
+    }
+
+    /**
+     * Get the created_at attribute for humans.
+     *
+     * @return string
+     */
+    public function getCreatedAtForHumansAttribute()
+    {
+        return Carbon::parse($this->created_at)->diffForHumans();
+    }
+
+    /**
+     * Get the created_at attribute for datatable.
+     *
+     * @return array
+     */
+    public function getCreatedAtTableAttribute()
+    {
+        return [
+            'display'       => $this->created_at_for_humans,
+            'timestamp'     => Carbon::parse($this->created_at)->timestamp,
+        ];
+    }
+
+    /**
+     * Get the updated_at attribute.
+     *
+     * @param  $date
+     * @return string
+     */
+    public function getUpdatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->format(config('laravel-user-module.date_format'));
+    }
+
+    /**
+     * Get the updated_at attribute for humans.
+     *
+     * @return string
+     */
+    public function getUpdatedAtForHumansAttribute()
+    {
+        return Carbon::parse($this->updated_at)->diffForHumans();
+    }
+
+    /**
+     * Get the updated_at attribute for datatable.
+     *
+     * @return array
+     */
+    public function getUpdatedAtTableAttribute()
+    {
+        return [
+            'display'       => $this->updated_at_for_humans,
+            'timestamp'     => Carbon::parse($this->updated_at)->timestamp,
+        ];
+    }
 
     /**
      * Get the link attribute.

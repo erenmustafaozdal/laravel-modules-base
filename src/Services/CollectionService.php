@@ -64,7 +64,7 @@ class CollectionService
         $relation = $this->relation;
         foreach($items as $item) {
             $model = $this->getValues($item,$glue);
-            $item->parents = $glue . $item->name;
+            $item->parents = $glue . $item->name_uc_first;
             $this->results[] = $model;
             if ($item->$relation->count() > 0) {
                 $this->getOptions($item->$relation,$item->parents . '/');
