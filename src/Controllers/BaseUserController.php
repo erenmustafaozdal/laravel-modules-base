@@ -27,7 +27,7 @@ class BaseUserController extends Controller implements DataTablesInterface, Oper
     {
         $result = $this->traitStoreModel($class, $path);
 
-        if ($this->request->is_active) {
+        if ($this->request->is_active == 1) {
             $this->activationComplete();
             return $result;
         }
@@ -47,7 +47,7 @@ class BaseUserController extends Controller implements DataTablesInterface, Oper
     {
         $result = $this->traitUpdateModel($class, $path);
 
-        if ($this->request->has('is_active') && $this->request->is_active) {
+        if ($this->request->has('is_active') && $this->request->is_active == 1) {
             $this->activationComplete();
             return $result;
         } else if ($this->request->has('is_active')) {
