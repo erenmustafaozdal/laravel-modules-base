@@ -57,7 +57,7 @@ trait OperationNodeTrait
             if (is_null($path)) {
                 return response()->json([
                     'id' => $this->model->id,
-                    'name' => $this->model->name
+                    'name' => $this->model->name_uc_first
                 ]);
             }
 
@@ -92,7 +92,7 @@ trait OperationNodeTrait
             DB::commit();
             return response()->json([
                 'id'        => $this->model->id,
-                'name'      => $this->model->name
+                'name'      => $this->model->name_uc_first
             ]);
         } catch (UpdateException $e) {
             DB::rollback();
@@ -130,7 +130,7 @@ trait OperationNodeTrait
         return [
             'id'        => $model->id,
             'parent'    => $model->parent_id,
-            'name'      => $model->name,
+            'name'      => $model->name_uc_first,
             'level'     => $model->depth,
             'type'      => $model->isLeaf() ? 'file' : 'folder'
         ];
