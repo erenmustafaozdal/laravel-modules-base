@@ -155,12 +155,11 @@ trait ModelDataTrait
     /**
      * Get the name uc first attribute.
      *
-     * @param  string $name
      * @return string
      */
-    public function getNameUcFirstAttribute($name)
+    public function getNameUcFirstAttribute()
     {
-        return ucfirst_tr($name);
+        return ucfirst_tr($this->name);
     }
 
     /**
