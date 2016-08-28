@@ -49,6 +49,9 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->app->booting(function() {
             $loader = \Illuminate\Foundation\AliasLoader::getInstance();
             $loader->alias('LMBCollection', 'ErenMustafaOzdal\LaravelModulesBase\Facades\Collection');
+
+            // register validation
+            $this->registerValidationRules($this->app['validator']);
         });
     }
 
@@ -61,6 +64,26 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
     {
         $this->app->singleton('laravelmodulesbase.collection', function ($app) {
             return new CollectionService();
+        });
+    }
+
+    /**
+     * Registers validation rules
+     *
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     */
+    protected function registerValidationRules($validator)
+    {
+        $validator->resolver(function($translator, $data, $rules, $messages)
+        {
+            return new \ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator($translator, $data, $rules, $messages);
+        });
+        $validator->replacer('elfinder_max', function($message, $attribute, $rule, $parameters) {
+            return str_replace(':size',$parameters[0],$message);
+        });
+        $validator->replacer('elfinder', function($message, $attribute, $rule, $parameters) {
+            return str_replace(':values',implode(', ', $parameters),$message);
         });
     }
 }
