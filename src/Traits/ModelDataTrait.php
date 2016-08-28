@@ -172,6 +172,7 @@ trait ModelDataTrait
         if ( ! $slug) {
             $slug = str_slug($this->name, '-');
         }
+
         $this->attributes['slug'] =  $slug;
     }
 
