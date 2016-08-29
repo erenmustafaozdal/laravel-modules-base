@@ -41,7 +41,8 @@ class ElfinderValidator extends Validator
      */
     public function validateElfinderMax($attribute, $value, $parameters, $validator)
     {
-        if ( File::size($value) > $parameters[0] ) {
+        $size = $parameters[0] * 1024; // parameters kB to B
+        if ( File::size($value) > $size ) {
             return false;
         }
         return true;

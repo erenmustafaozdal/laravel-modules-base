@@ -163,6 +163,16 @@ trait ModelDataTrait
     }
 
     /**
+     * Get the title uc first attribute.
+     *
+     * @return string
+     */
+    public function getTitleUcFirstAttribute()
+    {
+        return ucfirst_tr($this->title);
+    }
+
+    /**
      * Set slug encrypted
      *
      * @param $slug
@@ -174,17 +184,6 @@ trait ModelDataTrait
         }
 
         $this->attributes['slug'] =  $slug;
-    }
-
-    /**
-     * Get the title uc first attribute.
-     *
-     * @param  string $title
-     * @return string
-     */
-    public function getTitleUcFirstAttribute($title)
-    {
-        return ucfirst_tr($title);
     }
 
     /**
