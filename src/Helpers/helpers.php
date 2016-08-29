@@ -34,12 +34,18 @@ if (! function_exists('humanFileSize')) {
 */
 if (! function_exists('getModelSlug')) {
     /**
-     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param \Illuminate\Database\Eloquent\Model|string $model
      * @return string
      */
     function getModelSlug($model)
     {
-        return snake_case( substr( strrchr( get_class($model), '\\' ), 1 ) );
+        if ( ! is_string($model)) {
+            return snake_case(substr(strrchr(get_class($model), '\\'), 1));
+        }
+
+        $path_args = explode('\\', $model);
+        $path_args = explode('@', $path_args[count($path_args)-1]);
+        return snake_case(str_replace(['Controller', 'Api'], '',$path_args[0]));
     }
 }
 

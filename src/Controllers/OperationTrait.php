@@ -12,7 +12,6 @@ use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
 use ErenMustafaOzdal\LaravelModulesBase\Exceptions\StoreException;
 use ErenMustafaOzdal\LaravelModulesBase\Exceptions\UpdateException;
 use ErenMustafaOzdal\LaravelModulesBase\Exceptions\DestroyException;
-use ErenMustafaOzdal\LaravelModulesBase\Exceptions\ActivateException;
 
 trait OperationTrait
 {
@@ -343,7 +342,7 @@ trait OperationTrait
         if ( ! $this->fileOptions) {
             return $this->request->all();
         }
-        $excepts = collect($this->fileOptions)->implode('column', ',');
+
         $excepts = collect($this->fileOptions)->keyBy(function ($item) {
             $columns = explode('.', $item['column']);
             return count($columns) === 1 ? $columns[0] : $columns[1];
@@ -432,7 +431,7 @@ trait OperationTrait
         // İlişkili sayfalardan index hariç
         if( $indexPos === false ) {
             $id = $isUpdate ? $this->model->category_id : $this->relatedId;
-            return redirect( route("admin.{$path}", [
+            return redirect( route("admin.{$slug}.{$path}", [
                 'id'                => $id,
                 $this->routeRegex   => $this->model->id
             ]) );
@@ -444,7 +443,7 @@ trait OperationTrait
         }
 
         // İlişkili sayfalardan index
-        return redirect( route("admin.{$path}", ['id' => $this->relatedId]) );
+        return redirect( route("admin.{$slug}.{$path}", ['id' => $this->relatedId]) );
     }
 
     /**
