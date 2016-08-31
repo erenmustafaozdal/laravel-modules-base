@@ -3,6 +3,7 @@
 namespace ErenMustafaOzdal\LaravelModulesBase\Traits;
 
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 trait ModelDataTrait
 {
@@ -33,6 +34,52 @@ trait ModelDataTrait
      * @var string
      */
     protected $column;
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * set nodes
+     *
+     * @param $class
+     * @param $request
+     * @param string $type => move|store
+     */
+    public function setNode($class, Request $request, $type = 'store')
+    {
+        if ( ! $request->has('position')) {
+            $model = $class::find($request->input('parent'));
+            $this->makeChildOf($model);
+            return;
+        }
+
+        $input = $type === 'store' ? 'parent' : 'related';
+        switch($request->input('position')) {
+            case 'firstChild':
+                $model = $class::find($request->input($input));
+                $this->makeFirstChildOf($model);
+                break;
+            case 'lastChild':
+                $model = $class::find($request->input($input));
+                $this->makeChildOf($model);
+                break;
+            case 'before':
+                $model = $class::find($request->input('related'));
+                $this->moveToLeftOf($model);
+                break;
+            case 'after':
+                $model = $class::find($request->input('related'));
+                $this->moveToRightOf($model);
+                break;
+        }
+    }
 
     /**
      * get the html photo element
@@ -140,7 +187,6 @@ trait ModelDataTrait
         }
         return $attr;
     }
-
 
 
 

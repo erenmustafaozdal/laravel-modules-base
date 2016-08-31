@@ -35,6 +35,21 @@ class CollectionService
      */
     protected $results = [];
 
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Collection render with relation
+    | its render the nested category
+    |
+    | Input:
+    | - Category
+    |    - Sub Category
+    |
+    | Result: Category{Glue: maybe '/'}Sub Category
+    |--------------------------------------------------------------------------
+    */
+
     /**
      * get rendered collection with relation
      *

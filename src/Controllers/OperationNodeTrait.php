@@ -2,7 +2,6 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 
-use Illuminate\Http\Request;
 use DB;
 use Laracasts\Flash\Flash;
 
@@ -13,6 +12,14 @@ use ErenMustafaOzdal\LaravelModulesBase\Exceptions\UpdateException;
 trait OperationNodeTrait
 {
     use OperationTrait;
+
+    /**
+     * nested define values
+     * this value set the parent value
+     *
+     * @var array $defineValues
+     */
+    private $defineValues = [];
 
     /**
      * get nestable nodes
@@ -44,12 +51,9 @@ trait OperationNodeTrait
     {
         DB::beginTransaction();
         try {
-            $this->model = $class::create($this->request->all());
-            if (is_null($id)) {
-                $this->model->setNode($this->request);
-            } else {
-                $this->model->makeChildOf($class::find($id));
-            }
+            $datas = $this->request->parent != 0 ? $this->getDefineDatas($class) : $this->request->all();
+            $this->model = $class::create($datas);
+            $this->model->setNode($class, $this->request);
 
             event(new $this->events['success']($this->model));
             DB::commit();
@@ -86,7 +90,10 @@ trait OperationNodeTrait
         $this->model = $model;
         DB::beginTransaction();
         try {
-            $this->model->setNode($this->request, 'move');
+            if ($this->request->position === 'firstChild' || $this->request->position === 'lastChild') {
+                $this->model->fill($this->getDefineDatas($this->model))->save();
+            }
+            $this->model->setNode(get_class($this->model), $this->request, 'move');
 
             event(new $this->events['success']($this->model));
             DB::commit();
@@ -134,5 +141,34 @@ trait OperationNodeTrait
             'level'     => $model->depth,
             'type'      => $model->isLeaf() ? 'file' : 'folder'
         ];
+    }
+
+    /**
+     * set the define values
+     *
+     * @param array $columns
+     * @return void
+     */
+    protected function setDefineValues($columns)
+    {
+        $this->defineValues = $columns;
+    }
+
+    /**
+     * get the define datas
+     *
+     * @param $class
+     * @return array
+     */
+    protected function getDefineDatas($class)
+    {
+        $class = is_string($class) ? $class : get_class($class);
+        $id = $this->request->has('parent') ? $this->request->parent : $this->request->related;
+        $parent = $class::findOrFail($id);
+        $datas = $this->request->all();
+        foreach($this->defineValues as $value) {
+            $datas[$value] = $parent->$value;
+        }
+        return $datas;
     }
 }
