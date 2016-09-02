@@ -17,14 +17,14 @@ class CollectionService
     /**
      * get this key values of collection
      *
-     * @var string
+     * @var array
      */
-    protected $key;
+    protected $keys;
 
     /**
      * collection relation
      *
-     * @var string
+     * @var array
      */
     protected $relation;
 
@@ -56,13 +56,13 @@ class CollectionService
      * @param Collection $items
      * @param string $relation
      * @param string $glue
-     * @param string $key
+     * @param array $keys
      * @return Collection
      */
-    public function relationRender(Collection $items, $relation, $glue = '/', $key = 'name')
+    public function relationRender(Collection $items, $relation, $glue = '/', $keys = ['name'])
     {
         $this->glue = $glue;
-        $this->key = $key;
+        $this->keys = $keys;
         $this->relation = $relation;
         return collect( $this->getOptions($items) );
     }
@@ -82,7 +82,7 @@ class CollectionService
             $item->parents = $glue . $item->name_uc_first;
             $this->results[] = $model;
             if ($item->$relation->count() > 0) {
-                $this->getOptions($item->$relation,$item->parents . '/');
+                $this->getOptions($item->$relation,$item->parents . $this->glue);
             }
         }
         return $this->results;
@@ -97,11 +97,13 @@ class CollectionService
      */
     private function getValues($item, $glue)
     {
-        $key = $this->key;
-        return [
+        $datas = [
             'id'        => $item->id,
-            $key        => $item->$key,
             'parents'   => $glue . $item->parents
         ];
+        foreach($this->keys as $key) {
+            $datas[$key] = $item->$key;
+        }
+        return $datas;
     }
 }

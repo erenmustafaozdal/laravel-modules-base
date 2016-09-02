@@ -27,7 +27,7 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
             $fullColumn = implode('.', $columnParts);
 
             // options set edilir
-            if ($request->file($inputName)[0] || $request->has($inputName)) {
+            if ( ( (is_array($request->file($inputName)) && $request->file($inputName)[0]) || $request->file($inputName) ) || $request->has($inputName)) {
                 array_push($options, config("{$module}.{$model}.uploads.{$optionName}"));
             }
             // elfinder mi belirtilir
