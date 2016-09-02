@@ -4,6 +4,8 @@ namespace ErenMustafaOzdal\LaravelModulesBase;
 
 use ErenMustafaOzdal\LaravelModulesBase\Services\CollectionService;
 use Illuminate\Support\ServiceProvider;
+use ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator;
+use ErenMustafaOzdal\LaravelModulesBase\Validators\MediaValidator;
 
 class LaravelModulesBaseServiceProvider extends ServiceProvider
 {
@@ -75,15 +77,26 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
      */
     protected function registerValidationRules($validator)
     {
+        /**
+         * elfinder validator
+         */
         $validator->resolver(function($translator, $data, $rules, $messages)
         {
-            return new \ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator($translator, $data, $rules, $messages);
+            return new ElfinderValidator($translator, $data, $rules, $messages);
         });
         $validator->replacer('elfinder_max', function($message, $attribute, $rule, $parameters) {
             return str_replace(':size',$parameters[0],$message);
         });
         $validator->replacer('elfinder', function($message, $attribute, $rule, $parameters) {
             return str_replace(':values',implode(', ', $parameters),$message);
+        });
+
+        /**
+         * youtube validator
+         */
+        $validator->resolver(function($translator, $data, $rules, $messages)
+        {
+            return new MediaValidator($translator, $data, $rules, $messages);
         });
     }
 }
