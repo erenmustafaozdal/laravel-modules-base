@@ -164,7 +164,7 @@ trait ModelDataTrait
      */
     private function getFileSrc($file, $relation, $type = null)
     {
-        $id = is_null($relation) ? $this->id : $this->$relation->id;
+        $id = is_null($relation) ? $this->id : $this->$relation;
         $src  = $this->options['path']."/{$id}/";
         if (is_null($type)) {
             return $src . $file;
