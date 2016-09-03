@@ -430,8 +430,8 @@ trait OperationTrait
 
         // İlişkili sayfalardan index hariç
         if( $indexPos === false ) {
-            $id = $isUpdate ? $this->model->category_id : $this->relatedId;
-            return redirect( route("admin.{$slug}.{$path}", [
+            $id = $isUpdate && ! is_null($this->model->category_id) ? $this->model->category_id : ( $isUpdate ? $this->model->categories->first()->id : $this->relatedId);
+            return redirect( route("admin.{$path}", [
                 'id'                => $id,
                 $this->routeRegex   => $this->model->id
             ]) );
@@ -443,7 +443,7 @@ trait OperationTrait
         }
 
         // İlişkili sayfalardan index
-        return redirect( route("admin.{$slug}.{$path}", ['id' => $this->relatedId]) );
+        return redirect( route("admin.{$path}", ['id' => $this->relatedId]) );
     }
 
     /**
