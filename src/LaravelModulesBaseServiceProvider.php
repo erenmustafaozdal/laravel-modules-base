@@ -82,6 +82,12 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
          */
         $validator->resolver(function($translator, $data, $rules, $messages)
         {
+            // youtube validator
+            if(array_key_exists('video',$data)) {
+                return new MediaValidator($translator, $data, $rules, $messages);
+            }
+
+            // elfinder validator
             return new ElfinderValidator($translator, $data, $rules, $messages);
         });
         $validator->replacer('elfinder_max', function($message, $attribute, $rule, $parameters) {
@@ -91,12 +97,5 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
             return str_replace(':values',implode(', ', $parameters),$message);
         });
 
-        /**
-         * youtube validator
-         */
-        $validator->resolver(function($translator, $data, $rules, $messages)
-        {
-            return new MediaValidator($translator, $data, $rules, $messages);
-        });
     }
 }
