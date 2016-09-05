@@ -20,6 +20,10 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/lang' => base_path('resources/lang/vendor/laravel-modules-base'),
         ]);
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations')
+        ], 'migrations');
     }
 
     /**
