@@ -32,13 +32,13 @@ class Neighborhood extends Model
     */
 
     /**
-     * Get the postal_codes of the district.
+     * Get the postal code of the district.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function postalCodes()
+    public function postalCode()
     {
-        return $this->hasMany('App\PostalCode');
+        return $this->hasOne('App\PostalCode');
     }
 
 

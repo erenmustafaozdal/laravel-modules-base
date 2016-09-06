@@ -16,6 +16,10 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if (! $this->app->routesAreCached()) {
+            require __DIR__.'/Routes/routes.php';
+        }
+
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-modules-base');
         $this->publishes([
             __DIR__.'/../resources/lang' => base_path('resources/lang/vendor/laravel-modules-base'),
@@ -24,6 +28,10 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations/' => database_path('migrations')
         ], 'migrations');
+
+        $this->publishes([
+            __DIR__.'/../config/laravel-modules-base.php'   => config_path('laravel-modules-base.php')
+        ], 'config');
     }
 
     /**
@@ -37,6 +45,10 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->app->register('Yajra\Datatables\DatatablesServiceProvider');
         $this->app->register('Cartalyst\Sentinel\Laravel\SentinelServiceProvider');
         $this->app->register('Intervention\Image\ImageServiceProvider');
+
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/laravel-modules-base.php', 'laravel-modules-base'
+        );
 
         $this->app->booting(function()
         {
@@ -59,6 +71,13 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
             // register validation
             $this->registerValidationRules($this->app['validator']);
         });
+
+        // model binding
+        $router->model(config('laravel-modules-base.url.province'),  'App\Province');
+        $router->model(config('laravel-modules-base.url.county'),  'App\County');
+        $router->model(config('laravel-modules-base.url.district'),  'App\District');
+        $router->model(config('laravel-modules-base.url.neighborhood'),  'App\Neighborhood');
+        $router->model(config('laravel-modules-base.url.postal_code'),  'App\PostalCode');
     }
 
     /**
