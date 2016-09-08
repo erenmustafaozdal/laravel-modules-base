@@ -199,6 +199,16 @@ trait ModelDataTrait
     */
 
     /**
+     * Get the url link attribute.
+     *
+     * @return string
+     */
+    public function getUrlLinkAttribute()
+    {
+        return "<a href='{$this->url}'>{$this->url}</a>";
+    }
+
+    /**
      * Get the name uc first attribute.
      *
      * @return string
