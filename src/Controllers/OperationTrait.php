@@ -515,6 +515,16 @@ trait OperationTrait
     }
 
     /**
+     * get the model
+     *
+     * @return \Illuminate\Database\Eloquent\Model $model
+     */
+    protected function getModel()
+    {
+        return $this->model;
+    }
+
+    /**
      * update alias method
      *
      * @param \Illuminate\Database\Eloquent\Model $model

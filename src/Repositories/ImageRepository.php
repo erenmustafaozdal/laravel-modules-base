@@ -36,10 +36,10 @@ class ImageRepository extends FileRepository
         $files = $this->getFile($request);
 
         if (array_search(null,$files) === false) {
-            foreach($files as $file) {
+            foreach($files as $key => $file) {
                 $this->setFileName($file);
                 $this->setFileSize($file);
-                $this->files[] = $this->moveImage($file, $model, $request);
+                $this->files[] = $this->moveImage($file, $key, $model, $request);
             }
             return count($this->files) === 1 ? $this->files[0] : $this->files;
         }
@@ -50,18 +50,19 @@ class ImageRepository extends FileRepository
      * move upload image
      *
      * @param $photo
+     * @param integer $photoKey
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function moveImage($photo, $model, $request)
+    public function moveImage($photo, $photoKey, $model, $request)
     {
         $path = $this->getUploadPath($model);
 
         $photos['fileName'] = $this->fileName;
         $photos['fileSize'] = $this->fileSize;
         $photos['original'] = $this->original($photo, $path['original']);
-        $photos['thumbnails'] = $this->thumbnails($photo, $path['thumbnails'], $request);
+        $photos['thumbnails'] = $this->thumbnails($photo, $photoKey, $path['thumbnails'], $request);
         return $photos;
     }
 
@@ -99,11 +100,12 @@ class ImageRepository extends FileRepository
      * make original photo
      *
      * @param $photo
+     * @param integer $photoKey
      * @param array $path
      * @param $request
      * @return string
      */
-    protected function thumbnails($photo, $path, $request)
+    protected function thumbnails($photo, $photoKey, $path, $request)
     {
         $this->makeDirectoryBeforeUpload($path, false);
         $photos = [];
@@ -112,7 +114,7 @@ class ImageRepository extends FileRepository
             $this->image = Image::make( $photo )
                 ->encode('jpg');
 
-            $this->resizeImage($request, $thumb);
+            $this->resizeImage($request, $photoKey, $thumb);
             $this->image->save($thumb_path);
             $photos[$name] = '/' . $thumb_path;
         }
@@ -123,12 +125,13 @@ class ImageRepository extends FileRepository
      * resize image
      *
      * @param $request
+     * @param integer $photoKey
      * @param array $thumbnail
      * @return void
      */
-    private function resizeImage($request, $thumbnail)
+    private function resizeImage($request, $photoKey, $thumbnail)
     {
-        if ( ! $request->has('width') && ! $request->has('height')) {
+        if ( ! $request->width[$photoKey] && ! $request->height[$photoKey] ) {
             $this->image->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
                 $constraint->aspectRatio();
@@ -137,7 +140,7 @@ class ImageRepository extends FileRepository
             return;
         }
 
-        $this->image->crop($request->input('width'), $request->input('height'), $request->input('x'), $request->input('y'))
+        $this->image->crop($request->width[$photoKey], $request->height[$photoKey], $request->x[$photoKey], $request->y[$photoKey])
             ->resize($thumbnail['width'], null, function($constraint)
             {
                 $constraint->aspectRatio();
