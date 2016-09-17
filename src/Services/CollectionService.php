@@ -6,40 +6,9 @@ use Illuminate\Support\Collection;
 
 class CollectionService
 {
-
-    /**
-     * glue between items
-     *
-     * @var string
-     */
-    protected $glue;
-
-    /**
-     * get this key values of collection
-     *
-     * @var array
-     */
-    protected $keys;
-
-    /**
-     * collection relation
-     *
-     * @var array
-     */
-    protected $relation;
-
-    /**
-     * collection results
-     *
-     * @var array
-     */
-    protected $results = [];
-
-
-
     /*
     |--------------------------------------------------------------------------
-    | Collection render with relation
+    | Nested Baum Collection get with ancestors and self
     | its render the nested category
     |
     | Input:
@@ -51,59 +20,26 @@ class CollectionService
     */
 
     /**
-     * get rendered collection with relation
+     * ancestors and self render and get
      *
      * @param Collection $items
-     * @param string $relation
      * @param string $glue
      * @param array $keys
-     * @return Collection
-     */
-    public function relationRender(Collection $items, $relation, $glue = '/', $keys = ['name'])
-    {
-        $this->glue = $glue;
-        $this->keys = $keys;
-        $this->relation = $relation;
-        return collect( $this->getOptions($items) );
-    }
-
-    /**
-     * get options of collection
-     *
-     * @param Collection $items
-     * @param string $glue
      * @return array
      */
-    private function getOptions(Collection $items, $glue = '')
+    public function renderAncestorsAndSelf($items, $glue = '/', $keys = ['name'])
     {
-        $relation = $this->relation;
-        foreach($items as $item) {
-            $model = $this->getValues($item,$glue);
-            $item->parents = $glue . $item->name_uc_first;
-            $this->results[] = $model;
-            if ($item->$relation->count() > 0) {
-                $this->getOptions($item->$relation,$item->parents . $this->glue);
+        return $items->map(function($item,$key) use($keys, $glue)
+        {
+            $ancSelf = $item->ancestorsAndSelf()->get();
+            $result = [ 'id' => $item->id];
+            foreach ($keys as $k) {
+                $plucks = $ancSelf->pluck($k);
+                $plucks->pop();
+                $result['parent_' . $k] = $plucks->implode($k,$glue);
+                $result[$k] = $item->$k;
             }
-        }
-        return $this->results;
-    }
-
-    /**
-     * get key values
-     *
-     * @param $item
-     * @param string $glue
-     * @return array
-     */
-    private function getValues($item, $glue)
-    {
-        $datas = [
-            'id'        => $item->id,
-            'parents'   => $glue . $item->parents
-        ];
-        foreach($this->keys as $key) {
-            $datas[$key] = $item->$key;
-        }
-        return $datas;
+            return $result;
+        })->all();
     }
 }
