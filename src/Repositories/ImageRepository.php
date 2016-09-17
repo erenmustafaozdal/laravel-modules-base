@@ -131,19 +131,35 @@ class ImageRepository extends FileRepository
      */
     private function resizeImage($request, $photoKey, $thumbnail)
     {
-        if ( ! $request->width[$photoKey] && ! $request->height[$photoKey] ) {
-            $this->image->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
+        $request = $this->getSizeParameters($request);
+        if ( $request['width'][$photoKey] == 0 ) {
+            $this->image->fit($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
-                $constraint->aspectRatio();
                 $constraint->upsize();
             });
             return;
         }
 
-        $this->image->crop($request->width[$photoKey], $request->height[$photoKey], $request->x[$photoKey], $request->y[$photoKey])
+        $this->image->crop($request['width'][$photoKey], $request['height'][$photoKey], $request['x'][$photoKey], $request['y'][$photoKey])
             ->resize($thumbnail['width'], null, function($constraint)
             {
                 $constraint->aspectRatio();
             });
+    }
+
+    /**
+     * get size request parameter
+     *
+     * @param $request
+     * @return array
+     */
+    private function getSizeParameters($request)
+    {
+        return [
+            'x'     => is_array($request->x) ? $request->x : [$request->x],
+            'y'     => is_array($request->y) ? $request->y : [$request->y],
+            'width' => is_array($request->width) ? $request->width : [$request->width],
+            'height'=> is_array($request->height) ? $request->height : [$request->height],
+        ];
     }
 }
