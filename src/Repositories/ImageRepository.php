@@ -141,7 +141,7 @@ class ImageRepository extends FileRepository
         }
 
         $this->image->crop($request['width'][$photoKey], $request['height'][$photoKey], $request['x'][$photoKey], $request['y'][$photoKey])
-            ->resize($thumbnail['width'], null, function($constraint)
+            ->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
                 $constraint->aspectRatio();
             });
