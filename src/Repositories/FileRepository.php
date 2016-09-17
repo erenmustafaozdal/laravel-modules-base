@@ -137,7 +137,8 @@ class FileRepository extends Filesystem
         $filename = $file->getClientOriginalName();
         $mime = $file->getClientOriginalExtension();
         $parts = explode('.',$filename);
-        return str_slug($parts[0], "-") .  '.' . $mime;
+        array_pop($parts);
+        return str_slug( implode(' ', $parts), '-' ) .  '.' . $mime;
     }
 
     /**
