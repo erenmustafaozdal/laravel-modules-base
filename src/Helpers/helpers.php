@@ -164,7 +164,7 @@ if( ! function_exists('ucfirst_tr'))
 
 /*
 |--------------------------------------------------------------------------
-| strtoupper with turkish support
+| str to upper with turkish support
 |--------------------------------------------------------------------------
 */
 if( ! function_exists('strtoupper_tr'))
@@ -177,5 +177,41 @@ if( ! function_exists('strtoupper_tr'))
      */
     function strtoupper_tr($value, $lower_str_end = false, $encoding = 'UTF-8') {
         return mb_strtoupper(str_replace(array('İ','i'),array('İ','İ'),$value), $encoding);
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| laravel route helper hacked
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('lmbRoute')) {
+    /**
+     * Generate a URL to a named route.
+     *
+     * @param  string  $name
+     * @param  array   $parameters
+     * @param  bool    $absolute
+     * @return string
+     */
+    function lmbRoute($name, $parameters = [], $absolute = true)
+    {
+        $anchor = '#not-permission';
+        // route yoksa dön
+        if ( ! Route::has($name) ) {
+            return $anchor;
+        }
+
+        $prefixes = LMBPermission::getRoutePrefix();
+        $authUser = Sentinel::check();
+        $namePrefix = explode('.',$name)[0];
+        // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
+        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! Sentinel::hasAccess($name) ) {
+            return $anchor;
+        }
+
+        return route($name, $parameters, $absolute);
     }
 }

@@ -83,10 +83,10 @@ trait DataTableTrait
             $routeParam = isset($value['model'])
                 ? [ 'id' => $value['id'], $value['model'] => $model->id]
                 : ['id' => $model->id];
-            return route($value['route'], $routeParam);
+            return lmbRoute($value['route'], $routeParam);
         }
 
-        return route($value['route']);
+        return lmbRoute($value['route']);
     }
 
     /**
@@ -99,11 +99,11 @@ trait DataTableTrait
     {
         $slug = getModelSlug($model);
         return [
-            'details'   => route("api.{$slug}.detail", ['id' => $model->id]),
-            'fast_edit' => route("api.{$slug}.fastEdit", ['id' => $model->id]),
-            'edit'      => route("api.{$slug}.update", ['id' => $model->id]),
-            'destroy'   => route("api.{$slug}.destroy", ['id' => $model->id]),
-            'show'      => route("admin.{$slug}.show", ['id' => $model->id])
+            'details'   => lmbRoute("api.{$slug}.detail", ['id' => $model->id]),
+            'fast_edit' => lmbRoute("api.{$slug}.fastEdit", ['id' => $model->id]),
+            'edit'      => lmbRoute("api.{$slug}.update", ['id' => $model->id]),
+            'destroy'   => lmbRoute("api.{$slug}.destroy", ['id' => $model->id]),
+            'show'      => lmbRoute("admin.{$slug}.show", ['id' => $model->id])
         ];
     }
 }

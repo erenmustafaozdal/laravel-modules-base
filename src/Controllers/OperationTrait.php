@@ -425,13 +425,13 @@ trait OperationTrait
 
         // İlişkisiz yalın sayfalardan index hariç
         if ( $indexPos === false && $dotPos === false ) {
-            return redirect( route("admin.{$slug}.{$path}", ['id' => $this->model->id]) );
+            return redirect( lmbRoute("admin.{$slug}.{$path}", ['id' => $this->model->id]) );
         }
 
         // İlişkili sayfalardan index hariç
         if( $indexPos === false ) {
             $id = $isUpdate && ! is_null($this->model->category_id) ? $this->model->category_id : ( $isUpdate ? $this->model->categories->first()->id : $this->relatedId);
-            return redirect( route("admin.{$path}", [
+            return redirect( lmbRoute("admin.{$path}", [
                 'id'                => $id,
                 $this->routeRegex   => $this->model->id
             ]) );
@@ -439,11 +439,11 @@ trait OperationTrait
 
         // İlişkisiz sayfalardan index
         if ($dotPos === false) {
-            return redirect( route("admin.{$slug}.{$path}") );
+            return redirect( lmbRoute("admin.{$slug}.{$path}") );
         }
 
         // İlişkili sayfalardan index
-        return redirect( route("admin.{$path}", ['id' => $this->relatedId]) );
+        return redirect( lmbRoute("admin.{$path}", ['id' => $this->relatedId]) );
     }
 
     /**

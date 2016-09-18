@@ -3,6 +3,7 @@
 namespace ErenMustafaOzdal\LaravelModulesBase;
 
 use ErenMustafaOzdal\LaravelModulesBase\Services\CollectionService;
+use ErenMustafaOzdal\LaravelModulesBase\Services\PermissionService;
 use Illuminate\Support\ServiceProvider;
 use ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator;
 use ErenMustafaOzdal\LaravelModulesBase\Validators\MediaValidator;
@@ -63,10 +64,12 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
 
         // register services
         $this->registerCollectionService();
+        $this->registerPermissionService();
 
         $this->app->booting(function() {
             $loader = \Illuminate\Foundation\AliasLoader::getInstance();
             $loader->alias('LMBCollection', 'ErenMustafaOzdal\LaravelModulesBase\Facades\Collection');
+            $loader->alias('LMBPermission', 'ErenMustafaOzdal\LaravelModulesBase\Facades\Permission');
 
             // register validation
             $this->registerValidationRules($this->app['validator']);
@@ -89,6 +92,18 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
     {
         $this->app->singleton('laravelmodulesbase.collection', function ($app) {
             return new CollectionService();
+        });
+    }
+
+    /**
+     * Registers the permission service
+     *
+     * @return void
+     */
+    protected function registerPermissionService()
+    {
+        $this->app->singleton('laravelmodulesbase.permission', function ($app) {
+            return new PermissionService();
         });
     }
 
