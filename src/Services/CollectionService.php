@@ -36,7 +36,7 @@ class CollectionService
             foreach ($keys as $k) {
                 $plucks = $ancSelf->pluck($k);
                 $plucks->pop();
-                $result['parent_' . $k] = $plucks->implode($k,$glue);
+                $result['parent_' . $k] = $plucks->implode($glue);
                 $result[$k] = $item->$k;
             }
             return $result;
