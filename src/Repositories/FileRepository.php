@@ -230,6 +230,35 @@ class FileRepository extends Filesystem
 
     /*
     |--------------------------------------------------------------------------
+    | File Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * delete file with model path
+     *
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string|null $parentRelation
+     */
+    public function deletePhoto($model, $parentRelation = null)
+    {
+        $thumbs = $this->options['photo']['thumbnails'];
+        $id = is_null($parentRelation) ? $model->id : $model->$parentRelation->id;
+        $path = $this->options['photo']['path'] . "/{$id}";
+        // delete original
+        $this->delete($path . "/original/{$model->photo}");
+        // thumbnails delete
+        foreach($thumbs as $thumb => $size){
+            $this->delete($path . "/thumbnails/{$thumb}_{$model->photo}");
+        }
+    }
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Directory Methods
     |--------------------------------------------------------------------------
     */
