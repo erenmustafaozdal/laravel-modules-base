@@ -184,6 +184,32 @@ if( ! function_exists('strtoupper_tr'))
 
 /*
 |--------------------------------------------------------------------------
+| unset element and return
+|--------------------------------------------------------------------------
+*/
+if( ! function_exists('unsetReturn'))
+{
+    /**
+     * @param $variable
+     * @param string|null $key
+     * @return mixed
+     */
+    function unsetReturn(&$variable, $key = null) {
+        if (is_array($variable) && array_key_exists($key, $variable)) {
+            $val = $variable[$key];
+            unset($variable[$key]);
+            return $val;
+        }
+        $val = $variable;
+        unset($variable);
+        return $val;
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
 | laravel route helper hacked
 |--------------------------------------------------------------------------
 */
