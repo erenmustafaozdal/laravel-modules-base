@@ -232,7 +232,7 @@ class PermissionService
      */
     public function permissionRate($count)
     {
-        return intval( $count * 100 / $this->getAllNames()->count() );
+        return intval( getPercent($this->getAllNames()->count(),$count) );
     }
 
     /**

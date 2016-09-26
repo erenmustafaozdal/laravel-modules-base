@@ -241,3 +241,22 @@ if (! function_exists('lmbRoute')) {
         return route($name, $parameters, $absolute);
     }
 }
+
+
+
+/*
+|--------------------------------------------------------------------------
+| get percent
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('getPercent')) {
+    /**
+     * @param integer $max
+     * @param integer $value
+     * @return float
+     */
+    function getPercent($max, $value)
+    {
+        return $value * 100 / $max;
+    }
+}

@@ -325,6 +325,7 @@ trait OperationTrait
                     foreach ($group['datas'] as $data) {
                         $relation_models[] = new $group['relation_model']($data);
                     }
+                    $this->model->$relation()->delete();
                     $this->model->$relation()->saveMany($relation_models);
                 }
                 continue;
