@@ -236,7 +236,8 @@ trait ModelDataTrait
     public function setSlugAttribute($slug)
     {
         if ( ! $slug) {
-            $slug = str_slug($this->name, '-');
+            $title = is_null($this->name) ? $this->title : $this->name;
+            $slug = str_slug($title, '-');
         }
 
         $this->attributes['slug'] =  $slug;
