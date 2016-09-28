@@ -345,4 +345,116 @@ trait ModelDataTrait
         }
         return "<a href='{$this->link->link}' target='_blank'> {$this->link->link} </a>";
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Data Table Configs get and set attribute methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the datatable_filter string attribute.
+     *
+     * @return string
+     */
+    public function getDatatableFilterStringAttribute()
+    {
+        return $this->datatable_filter == 1 ? 'true' : 'false';
+    }
+
+    /**
+     * Get the datatable_filter attribute.
+     *
+     * @param boolean $datatable_filter
+     * @return string
+     */
+    public function getDatatableFilterAttribute($datatable_filter)
+    {
+        return $datatable_filter == 1 ? true : false;
+    }
+
+    /**
+     * Get the datatable_tools string attribute.
+     *
+     * @return string
+     */
+    public function getDatatableToolsStringAttribute()
+    {
+        return $this->datatable_tools == 1 ? 'true' : 'false';
+    }
+
+    /**
+     * Get the datatable_tools attribute.
+     *
+     * @param boolean $datatable_tools
+     * @return string
+     */
+    public function getDatatableToolsAttribute($datatable_tools)
+    {
+        return $datatable_tools == 1 ? true : false;
+    }
+
+    /**
+     * Get the datatable_fast_add string attribute.
+     *
+     * @return string
+     */
+    public function getDatatableFastAddStringAttribute()
+    {
+        return $this->datatable_fast_add == 1 ? 'true' : 'false';
+    }
+
+    /**
+     * Get the datatable_fast_add attribute.
+     *
+     * @param boolean $datatable_fast_add
+     * @return string
+     */
+    public function getDatatableFastAddAttribute($datatable_fast_add)
+    {
+        return $datatable_fast_add == 1 ? true : false;
+    }
+
+    /**
+     * Get the datatable_group_action string attribute.
+     *
+     * @return string
+     */
+    public function getDatatableGroupActionStringAttribute()
+    {
+        return $this->datatable_group_action == 1 ? 'true' : 'false';
+    }
+
+    /**
+     * Get the datatable_group_action attribute.
+     *
+     * @param boolean $datatable_group_action
+     * @return string
+     */
+    public function getDatatableGroupActionAttribute($datatable_group_action)
+    {
+        return $datatable_group_action == 1 ? true : false;
+    }
+
+    /**
+     * Get the datatable_detail string attribute.
+     *
+     * @return string
+     */
+    public function getDatatableDetailStringAttribute()
+    {
+        return $this->datatable_detail == 1 ? 'true' : 'false';
+    }
+
+    /**
+     * Get the datatable_detail attribute.
+     *
+     * @param boolean $datatable_detail
+     * @return string
+     */
+    public function getDatatableDetailAttribute($datatable_detail)
+    {
+        return $datatable_detail == 1 ? true : false;
+    }
 }
