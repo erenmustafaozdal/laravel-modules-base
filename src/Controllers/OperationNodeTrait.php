@@ -55,6 +55,11 @@ trait OperationNodeTrait
             $this->model = $class::create($datas);
             $this->model->setNode($class, $this->request);
 
+            // eğer başka ilişki varsa onları da ekle
+            if ($this->opsRelation && ! $this->fillModel($this->opsRelation)) {
+                throw new StoreException($this->request->all());
+            }
+
             event(new $this->events['success']($this->model));
             DB::commit();
 
@@ -94,6 +99,11 @@ trait OperationNodeTrait
                 $this->model->fill($this->getDefineDatas($this->model))->save();
             }
             $this->model->setNode(get_class($this->model), $this->request, 'move');
+
+            // eğer başka ilişki varsa onları da ekle
+            if ($this->opsRelation && ! $this->fillModel($this->opsRelation)) {
+                throw new StoreException($this->request->all());
+            }
 
             event(new $this->events['success']($this->model));
             DB::commit();

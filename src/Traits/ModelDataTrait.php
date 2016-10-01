@@ -194,6 +194,41 @@ trait ModelDataTrait
 
     /*
     |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * get extra column datas with model values
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param $model
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeExtrasWithValues($query, $model)
+    {
+        $modelSlug = $model ? getModelSlug($model) : false;
+        return $query->with([
+            'extras' => function($query) use($model,$modelSlug)
+            {
+                if ( ! $model ) return $query;
+
+                return $query->with([
+                    'documents' => function($query) use($model,$modelSlug)
+                    {
+                        return $query->wherePivot("{$modelSlug}_id",$model->id);
+                    }
+                ]);
+            }
+        ]);
+    }
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Model get and set attribute
     |--------------------------------------------------------------------------
     */
@@ -456,5 +491,74 @@ trait ModelDataTrait
     public function getDatatableDetailAttribute($datatable_detail)
     {
         return $datatable_detail == 1 ? true : false;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Other Configs get and set attribute methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the description_is_editor attribute.
+     *
+     * @param boolean $description_is_editor
+     * @return string
+     */
+    public function getDescriptionIsEditorAttribute($description_is_editor)
+    {
+        return $description_is_editor == 1 ? true : false;
+    }
+
+    /**
+     * Get the config_propagation attribute.
+     *
+     * @param boolean $config_propagation
+     * @return string
+     */
+    public function getConfigPropagationAttribute($config_propagation)
+    {
+        return $config_propagation == 1 ? true : false;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Thumbnail Configs get and set attribute methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the photo_width attribute with pixel.
+     *
+     * @return string|null
+     */
+    public function getPhotoWidthPxAttribute()
+    {
+        return is_null($this->photo_width) ? null : $this->photo_width . ' ' . lmcTrans('admin.fields.pixel');
+    }
+
+    /**
+     * Get the photo_height attribute with pixel.
+     *
+     * @return string|null
+     */
+    public function getPhotoHeightPxAttribute()
+    {
+        return is_null($this->photo_height) ? null : $this->photo_height . ' ' . lmcTrans('admin.fields.pixel');
+    }
+
+    /**
+     * get the aspect ration with photo width and photo height
+     *
+     * @return float|null
+     */
+    public function getAspectRatioAttribute()
+    {
+        if ($this->photo_width == 0 || $this->photo_height == 0) {
+            return null;
+        }
+        return $this->photo_width/$this->photo_height;
     }
 }

@@ -3,6 +3,7 @@
 namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 
 use App\Http\Controllers\Controller;
+use Config;
 
 class BaseController extends Controller implements DataTablesInterface, OperationInterface
 {
@@ -35,9 +36,32 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
                 array_push($elfinders, $fullColumn);
             }
         }
+
         $this->setFileOptions($options);
         foreach($elfinders as $elfinder) {
             $this->setElfinderToOptions($elfinder);
         }
+    }
+
+    /**
+     * change options with model category
+     *
+     * @param $category
+     * @return void
+     */
+    protected function changeOptions($category)
+    {
+        $thumbnails = $category->ancestorsAndSelf()->with('thumbnails')->get()->map(function($item)
+        {
+            return $item->thumbnails->keyBy('slug')->map(function($item)
+            {
+                return [ 'width' => $item->photo_width, 'height' => $item->photo_height ];
+            });
+        })->reduce(function($carry,$item)
+        {
+            return $carry->merge($item);
+        },collect())->toArray();
+        Config::set('laravel-document-module.document.uploads.photo.aspect_ratio', $category->aspect_ratio);
+        Config::set('laravel-document-module.document.uploads.photo.thumbnails', $thumbnails);
     }
 }
