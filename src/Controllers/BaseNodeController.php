@@ -36,6 +36,7 @@ class BaseNodeController extends Controller implements OperationInterface
      */
     protected function setRelation($request)
     {
+        $this->changeRelationModel();
         $relation = [];
         if ($request->has('group-thumbnail')) {
             $this->relations['thumbnails']['datas'] = collect($request->get('group-thumbnail'))->reject(function($item)
@@ -78,9 +79,22 @@ class BaseNodeController extends Controller implements OperationInterface
      */
     protected function setRelationDefine($parent)
     {
+        $this->changeRelationModel();
         $this->setDefineValues(['has_description','has_photo','show_title','show_description','show_photo','datatable_filter','datatable_tools','datatable_fast_add','datatable_group_action','datatable_detail','description_is_editor','config_propagation','photo_width','photo_height']);
         $this->relations['thumbnails']['datas'] = $parent->thumbnails()->get(['slug','photo_width','photo_height'])->toArray();
         $this->relations['extras']['datas'] = $parent->extras()->get(['name','type'])->toArray();
         $this->setOperationRelation($this->relations);
+    }
+
+    /**
+     * change relation model
+     */
+    protected function changeRelationModel()
+    {
+        $module = getModule(get_called_class());
+        $module = explode('-',$module);
+        $module = ucfirst_tr($module[1]);
+        $this->relations['thumbnails']['relation_model'] = "\\App\\{$module}Thumbnail";
+        $this->relations['extras']['relation_model'] = "\\App\\{$module}Extra";
     }
 }
