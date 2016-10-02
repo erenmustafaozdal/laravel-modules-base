@@ -214,7 +214,7 @@ trait ModelDataTrait
                 if ( ! $model ) return $query;
 
                 return $query->with([
-                    'documents' => function($query) use($model,$modelSlug)
+                    "{$modelSlug}s" => function($query) use($model,$modelSlug)
                     {
                         return $query->wherePivot("{$modelSlug}_id",$model->id);
                     }
