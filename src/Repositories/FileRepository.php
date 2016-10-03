@@ -220,6 +220,7 @@ class FileRepository extends Filesystem
             'relation_type'     => $relation,
             'relation'          => $columnParams[0],
             'relation_model'    => $this->options['relation_model'],
+            'is_reset'          => false,
             'datas'             => $relation === 'hasOne' ? $datas[0] : $datas
         ];
     }
