@@ -119,7 +119,7 @@ class FileRepository extends Filesystem
      */
     protected function setFileSize($file)
     {
-        $this->fileSize = ! is_null($this->elfinderFilePath) ? $this->getFileSize() : $file->getClientSize();
+        $this->fileSize = ! is_null($this->elfinderFilePath) ? $this->getFileSize() : (is_string($file) ? $this->size($file) : $file->getClientSize());
     }
 
     /**
@@ -132,6 +132,9 @@ class FileRepository extends Filesystem
     {
         if ( ! is_null($this->elfinderFilePath) ) {
             return $this->getFileName();
+        }
+        if ( is_string($file) ) {
+            return substr( strrchr( $file, '/' ), 1 );
         }
 
         $filename = $file->getClientOriginalName();
@@ -155,6 +158,12 @@ class FileRepository extends Filesystem
             $this->elfinderFilePath = public_path($file);
         } else {
             $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
+            // eğer dosya yoksa init var mı bakılır
+            if (! $file || array_search(null,$file) !== false) {
+                $column  = 'init_';
+                $column .= count($columns) > 1 ? $columns[1] : $columns[0];
+                $file = $request->get($column);
+            }
         }
         return is_array($file) ? $file : [$file];
     }
