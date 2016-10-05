@@ -132,8 +132,9 @@ class ImageRepository extends FileRepository
      */
     private function resizeImage($request, $photoKey, $thumbnail)
     {
-        $request = $this->getSizeParameters($request);
-        if ( $request['width'][$photoKey] == 0 ) {
+        $newRequest = $this->getSizeParameters($request);
+        if ( $newRequest['width'][$photoKey] == 0 ) {
+            $thumbnail = $request->has('crop_type') ? $this->getCropTypeSize($thumbnail,$request->get('crop_type')) : $thumbnail;
             $this->image->fit($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
                 $constraint->upsize();
@@ -141,11 +142,41 @@ class ImageRepository extends FileRepository
             return;
         }
 
-        $this->image->crop($request['width'][$photoKey], $request['height'][$photoKey], $request['x'][$photoKey], $request['y'][$photoKey])
+        $this->image->crop($newRequest['width'][$photoKey], $newRequest['height'][$photoKey], $newRequest['x'][$photoKey], $newRequest['y'][$photoKey])
             ->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
                 $constraint->aspectRatio();
             });
+    }
+
+    /**
+     * get crop type size
+     *
+     * @param array $thumbnail
+     * @param string $crop_type
+     * @return array
+     */
+    public function getCropTypeSize($thumbnail,$crop_type)
+    {
+        if ($crop_type === 'square') {
+            return [
+                'width'     => $thumbnail['width'],
+                'height'    => $thumbnail['width']
+            ];
+        }
+
+        $ratio = $thumbnail['width'] / $thumbnail['height'];
+        if ($crop_type === 'vertical') {
+            return [
+                'width'     => $ratio == 1 || $ratio < 1 ? $thumbnail['width'] : $thumbnail['height'],
+                'height'    => $ratio == 1 ? $thumbnail['width'] / $this->options['vertical_ratio'] : ($ratio < 1 ? $thumbnail['height'] : $thumbnail['width'])
+            ];
+        }
+
+        return [
+            'width'     => $ratio == 1 || $ratio > 1 ? $thumbnail['width'] : $thumbnail['height'],
+            'height'    => $ratio == 1 ? $thumbnail['width'] / $this->options['horizontal_ratio'] : ($ratio > 1 ? $thumbnail['height'] : $thumbnail['width'])
+        ];
     }
 
     /**
