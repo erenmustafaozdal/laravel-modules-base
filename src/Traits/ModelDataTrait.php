@@ -223,6 +223,32 @@ trait ModelDataTrait
         ]);
     }
 
+    /**
+     * get published model data
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('is_publish',true);
+    }
+
+    /**
+     * get has a minimum one published child element of category
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $relation
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeHasPublishedElement($query, $relation)
+    {
+        return $query->has($relation, '>=', 1, 'and', function($query)
+        {
+            return $query->published();
+        });
+    }
+
 
 
 

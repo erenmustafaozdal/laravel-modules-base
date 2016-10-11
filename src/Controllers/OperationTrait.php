@@ -326,7 +326,7 @@ trait OperationTrait
                         $relation_models[] = new $group['relation_model']($data);
                     }
 
-                    if ($group['is_reset']) {
+                    if (isset($group['is_reset']) && $group['is_reset']) {
                         $this->model->$relation()->delete();
                     }
                     $this->model->$relation()->saveMany($relation_models);
