@@ -22,6 +22,13 @@ trait OperationNodeTrait
     private $defineValues = [];
 
     /**
+     * model name attribute
+     *
+     * @var string
+     */
+    protected $name = 'name';
+
+    /**
      * get nestable nodes
      *
      * @param $class
@@ -45,6 +52,7 @@ trait OperationNodeTrait
      * @param $class
      * @param string|null $path
      * @param integer|null $id
+     * @throws StoreException
      * @return array
      */
     protected function storeNode($class, $path = null, $id = null)
@@ -64,9 +72,10 @@ trait OperationNodeTrait
             DB::commit();
 
             if (is_null($path)) {
+                $attribute = "{$this->name}_uc_first";
                 return response()->json([
                     'id' => $this->model->id,
-                    'name' => $this->model->name_uc_first
+                    'name' => $this->model->$attribute
                 ]);
             }
 
@@ -88,6 +97,7 @@ trait OperationNodeTrait
      * move nestable node
      *
      * @param $model
+     * @throws StoreException
      * @return array
      */
     protected function moveModel($model)
@@ -107,9 +117,10 @@ trait OperationNodeTrait
 
             event(new $this->events['success']($this->model));
             DB::commit();
+            $attribute = "{$this->name}_uc_first";
             return response()->json([
                 'id'        => $this->model->id,
-                'name'      => $this->model->name_uc_first
+                'name'      => $this->model->$attribute
             ]);
         } catch (UpdateException $e) {
             DB::rollback();
@@ -144,10 +155,11 @@ trait OperationNodeTrait
      */
     private function getNodeValues($model)
     {
+        $attribute = "{$this->name}_uc_first";
         return [
             'id'        => $model->id,
             'parent'    => $model->parent_id,
-            'name'      => $model->name_uc_first,
+            'name'      => $model->$attribute,
             'level'     => $model->depth,
             'type'      => $model->isLeaf() ? 'file' : 'folder'
         ];
