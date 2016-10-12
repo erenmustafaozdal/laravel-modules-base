@@ -277,11 +277,13 @@ class FileRepository extends Filesystem
      * delete multiple directories with model path
      *
      * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string|null $parentRelation
      */
-    public function deleteDirectories($model)
+    public function deleteDirectories($model, $parentRelation = null)
     {
+        $id = is_null($parentRelation) ? $model->id : $model->$parentRelation->id;
         foreach($this->options as $option){
-            $this->deleteDirectory($option['path'] . "/{$model->id}");
+            $this->deleteDirectory($option['path'] . "/{$id}");
         }
     }
 
