@@ -587,4 +587,34 @@ trait ModelDataTrait
         }
         return $this->photo_width/$this->photo_height;
     }
+
+    /**
+     * Get the first_name attribute.
+     *
+     * @return string
+     */
+    public function getFirstNameUcFirstAttribute()
+    {
+        return ucfirst_tr($this->first_name);
+    }
+
+    /**
+     * Get the last_name attribute.
+     *
+     * @return string
+     */
+    public function getLastNameUpperAttribute()
+    {
+        return strtoupper_tr($this->last_name);
+    }
+
+    /**
+     * Get the fullname attribute.
+     *
+     * @return string
+     */
+    public function getFullnameAttribute()
+    {
+        return $this->first_name_uc_first.' '.$this->last_name_upper;
+    }
 }
