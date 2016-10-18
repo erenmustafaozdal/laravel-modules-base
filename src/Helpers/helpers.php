@@ -134,7 +134,7 @@ if( ! function_exists('ucfirst_tr'))
      * @param string $encoding
      * @return string
      */
-    function ucfirst_tr($value, $lower_str_end = true, $encoding = 'UTF-8') {
+    function ucfirst_tr($value, $lower_str_end = false, $encoding = 'UTF-8') {
         $values = explode(' ', $value);
         $values_len = count($values);
 
