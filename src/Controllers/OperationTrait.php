@@ -426,6 +426,7 @@ trait OperationTrait
         $indexPos = strpos($path,'index');
         $dotPos = strpos($path,'.');
         $slug = getModelSlug($this->model);
+        dd($slug);
 
         // İlişkisiz yalın sayfalardan index hariç
         if ( $indexPos === false && $dotPos === false ) {
@@ -581,5 +582,72 @@ trait OperationTrait
         $this->setEvents($events);
         $action = camel_case($this->request->action) . 'GroupAction';
         return $this->$action($model);
+    }
+
+    /**
+     * clone model and relation
+     *
+     * @param $model
+     * @param $lastCopy
+     * @param array $changeColumns
+     * @param array $relations
+     * @return \Illuminate\Database\Eloquent\Model|boolean
+     */
+    protected function cloneModel($model, $lastCopy, $changeColumns = [], $relations = [])
+    {
+        // model copy
+        $clone = $model->replicate();
+        $clone->copied_id = $model->id;
+        if ( is_null($lastCopy) ) {
+            foreach($changeColumns as $column) {
+                $clone->$column = "{$model->$column}-2";
+            }
+        } else {
+            foreach($changeColumns as $column) {
+                $explodeColumn = explode('-',$lastCopy->$column);
+                $explodeColumn = last($explodeColumn) + 1;
+                $clone->$column = "{$model->$column}-{$explodeColumn}";
+            }
+        }
+        if ( ! is_null($model->parent_id)) {
+            $clone->lft = null;
+            $clone->rgt = null;
+            $clone->parent_id = null;
+            $clone->depth = 0;
+        }
+        if ( ! $clone->push() ) {
+            return false;
+        }
+
+        foreach($relations as $relation) {
+            if ($relation['type'] === 'hasOne' && ! is_null($model->$relation['relation'])) {
+                $cloneOption = $this->cloneRelation($model->$relation['relation']);
+                if ( ! $clone->$relation['relation']()->save($cloneOption)) {
+                    return false;
+                }
+            }
+            if ($relation['type'] === 'hasMany') {
+                foreach($model->$relation['relation'] as $option) {
+                    $cloneOption = $this->cloneRelation($option);
+                    if ( ! $clone->$relation['relation']()->save($cloneOption) ) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return $clone;
+    }
+
+    /**
+     * relation clone
+     *
+     * @param $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    private function cloneRelation($model)
+    {
+        $clone = $model->replicate();
+        $clone->push();
+        return $clone;
     }
 }
