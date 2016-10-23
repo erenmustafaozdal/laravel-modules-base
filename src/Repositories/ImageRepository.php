@@ -110,7 +110,10 @@ class ImageRepository extends FileRepository
     {
         $this->makeDirectoryBeforeUpload($path, false);
         $photos = [];
-        foreach ($this->options['thumbnails'] as $name => $thumb) {
+        $thumbnails = isset($this->options['changeThumb'])
+            ? $this->options['thumbnails'][$this->options['changeThumb']]
+            : $this->options['thumbnails'];
+        foreach ($thumbnails as $name => $thumb) {
             $thumb_path = $path . '/' . $name . '_' . $this->fileName;
             $this->image = Image::make( $photo )
                 ->encode('jpg');
@@ -188,10 +191,18 @@ class ImageRepository extends FileRepository
     private function getSizeParameters($request)
     {
         return [
-            'x'     => is_array($request->x) ? $request->x : [$request->x],
-            'y'     => is_array($request->y) ? $request->y : [$request->y],
-            'width' => is_array($request->width) ? $request->width : [$request->width],
-            'height'=> is_array($request->height) ? $request->height : [$request->height],
+            'x'     => isset($this->options['group'])
+                ? [$request->input("{$this->options['group']}.{$this->options['index']}.x")]
+                : (is_array($request->x) ? $request->x : [$request->x]),
+            'y'     => isset($this->options['group'])
+                ? [$request->input("{$this->options['group']}.{$this->options['index']}.y")]
+                : (is_array($request->y) ? $request->y : [$request->y]),
+            'width' => isset($this->options['group'])
+                ? [$request->input("{$this->options['group']}.{$this->options['index']}.width")]
+                : (is_array($request->width) ? $request->width : [$request->width]),
+            'height'=> isset($this->options['group'])
+                ? [$request->input("{$this->options['group']}.{$this->options['index']}.height")]
+                : (is_array($request->height) ? $request->height : [$request->height]),
         ];
     }
 }

@@ -393,7 +393,7 @@ trait OperationTrait
         if ( ! $this->repo->upload($this->model, $this->request) ) {
             return false;
         }
-        return $this->repo->getDatas();
+        return $this->repo->getDatas($this->request);
     }
 
     /**
@@ -426,7 +426,6 @@ trait OperationTrait
         $indexPos = strpos($path,'index');
         $dotPos = strpos($path,'.');
         $slug = getModelSlug($this->model);
-        dd($slug);
 
         // İlişkisiz yalın sayfalardan index hariç
         if ( $indexPos === false && $dotPos === false ) {
@@ -464,13 +463,16 @@ trait OperationTrait
     /**
      * set to file options is file from elfinder
      *
-     * @param string $column
+     * @param string|array $column
      */
     protected function setElfinderToOptions($column)
     {
         $this->fileOptions = collect($this->fileOptions)->map(function($item, $key) use($column)
         {
-            if ($item['column'] === $column) {
+            if (
+                (is_array($column) && $key === $column['index'] && $item['column'] === $column['column'])
+                || $item['column'] === $column
+            ) {
                 $item['isElfinder'] = true;
             }
             return $item;

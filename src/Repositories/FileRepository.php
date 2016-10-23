@@ -153,13 +153,18 @@ class FileRepository extends Filesystem
     protected function getFile($request)
     {
         $columns = explode('.',$this->options['column']);
+        $column = count($columns) > 1 ? $columns[1] : $columns[0];
+        $inputName = isset($this->options['group'])
+            ? "{$this->options['group']}.{$this->options['index']}.{$column}"
+            : $column;
+        $inputName = isset($this->options['inputPrefix']) && $this->options['inputPrefix'] ? $this->options['inputPrefix'] . $inputName : $inputName;
         if ( isset($this->options['isElfinder']) && $this->options['isElfinder'] ) {
-            $file = count($columns) > 1 ? $request->input($columns[1]) : $request->input($columns[0]);
+            $file = $request->input($inputName);
             $this->elfinderFilePath = public_path($file);
         } else {
-            $file = count($columns) > 1 ? $request->file($columns[1]) : $request->file($columns[0]);
+            $file = $request->file($inputName);
             // eğer dosya yoksa init var mı bakılır
-            if (! $file || array_search(null,$file) !== false) {
+            if (! $file || (is_array($file) && array_search(null,$file) !== false) ) {
                 $column  = 'init_';
                 $column .= count($columns) > 1 ? $columns[1] : $columns[0];
                 $file = $request->get($column);
@@ -187,7 +192,7 @@ class FileRepository extends Filesystem
     {
         $filename = substr( strrchr( $this->elfinderFilePath, '/' ), 1 );
         $parts = explode('.',$filename);
-        return str_slug($parts[0]) . '_' . time() .  '.' . $parts[1];
+        return str_slug($parts[0]) . '.' . $parts[1];
     }
 
     /**
@@ -203,8 +208,11 @@ class FileRepository extends Filesystem
 
     /**
      * get datas for save the database
+     *
+     * @param $request
+     * @return array
      */
-    public function getDatas()
+    public function getDatas($request)
     {
         $relation = $this->options['relation'];
         $columnParams = explode('.',$this->options['column']);
@@ -219,17 +227,29 @@ class FileRepository extends Filesystem
         }
         $datas = [];
         foreach ($this->files as $file) {
-            $datas[] = [
+            $data = [
                 $columnParams[1]    => $file['fileName'],
                 'size'              => $file['fileSize']
             ];
+            if ((isset($this->options['group']) && isset($this->options['add_column'])) || isset($this->options['add_column'])) {
+                foreach($this->options['add_column'] as $column) {
+                    $columnData = isset($this->options['group'])
+                        ? "{$this->options['group']}.{$this->options['index']}.{$column}"
+                        : (isset($this->options['inputPrefix']) ? $this->options['inputPrefix'] . $column : $column);
+                    $columnData = $request->input($columnData);
+                    if ($columnData) {
+                        $data[$column] = $columnData;
+                    }
+                }
+            }
+            $datas[] = $data;
         }
 
         return  [
             'relation_type'     => $relation,
             'relation'          => $columnParams[0],
             'relation_model'    => $this->options['relation_model'],
-            'is_reset'          => false,
+            'is_reset'          => isset($this->options['is_reset']) && $this->options['is_reset'] ? true : false,
             'datas'             => $relation === 'hasOne' ? $datas[0] : $datas
         ];
     }
@@ -303,7 +323,7 @@ class FileRepository extends Filesystem
         }
 
         // tamamen silip oluşturmak istendi ise
-        if ($this->exists($path) && $cleanDirectory) {
+        if (($this->exists($path) && $cleanDirectory) || (isset($this->options['is_reset']) && $this->options['is_reset'])) {
             $this->deleteDirectory($path, true);
             $this->makeDirectory($path, 0775, true, true);
             return true;

@@ -53,7 +53,7 @@ class BaseRequest extends Request
             for($i = 0; $i < count($this->file($attribute)); $i++) {
                 $this->rules[$attribute . '.' . $i] = "max:{$size}|image|mimes:{$mimes}";
             }
-        } else if ($this->has($attribute)) {
+        } else if ($this->file($attribute)) {
             $this->rules[$attribute] = "max:{$size}|image|mimes:{$mimes}";
         }
     }

@@ -23,17 +23,45 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
         $options = [];
         $elfinders = [];
         foreach($params as $column => $optionName) {
-            $columnParts = explode('.',$column);
+            $isGroup = is_integer($column) && is_array($optionName) && isset($optionName['group']);
+            $configName = $isGroup || isset($optionName['column']) ? $optionName['config'] : $optionName;
+            $columnParts = explode('.',($isGroup || isset($optionName['column']) ? $optionName['column'] : $column));
             $inputName = count($columnParts) > 1 ? $columnParts[1] : $columnParts[0];
+            $inputName = isset($optionName['inputPrefix']) ? $optionName['inputPrefix'] . $inputName : $inputName;
             $fullColumn = implode('.', $columnParts);
 
             // options set edilir
-            if ( ( (is_array($request->file($inputName)) && $request->file($inputName)[0]) || (!is_array($request->file($inputName)) && $request->file($inputName)) ) || $request->has($inputName)) {
-                array_push($options, config("{$module}.{$model}.uploads.{$optionName}"));
+            if (
+                ($isGroup && (
+                    is_array($request->file($optionName['group'])) && $request->file("{$optionName['group']}.{$column}.{$inputName}")
+                    || $request->has("{$optionName['group']}.{$column}.{$inputName}")
+                    )
+                )
+                || ( (is_array($request->file($inputName)) && $request->file($inputName)[0])
+                    || (!is_array($request->file($inputName)) && $request->file($inputName))
+                )
+                || $request->has($inputName)
+            ) {
+                $moduleOptions = config("{$module}.{$model}.uploads.{$configName}");
+                if ($isGroup) {
+                    $moduleOptions['group'] = $optionName['group'];
+                }
+                if ($isGroup || isset($optionName['column'])) {
+                    $moduleOptions['index'] = $column;
+                    if (isset($optionName['changeThumb'])) $moduleOptions['changeThumb'] = $optionName['changeThumb'];
+                    if (isset($optionName['is_reset'])) $moduleOptions['is_reset'] = $optionName['is_reset'];
+                    $moduleOptions['add_column'] = isset($optionName['add_column']) ? $optionName['add_column'] : [];
+                    $moduleOptions['inputPrefix'] = isset($optionName['inputPrefix']) ? $optionName['inputPrefix'] : [];
+                }
+                array_push($options, $moduleOptions);
             }
             // elfinder mi belirtilir
-            if ($request->has($inputName) && ! $request->file($inputName)[0]) {
-                array_push($elfinders, $fullColumn);
+            if (
+                ($isGroup && $request->has("{$optionName['group']}.{$column}.{$inputName}"))
+                || ($request->has($inputName) && ! $request->file($inputName)[0])
+            ) {
+                $elfinderOption = $isGroup || isset($optionName['column'])  ? ['index' => $column, 'column' => $optionName['column']] : $fullColumn;
+                array_push($elfinders, $elfinderOption);
             }
         }
 
