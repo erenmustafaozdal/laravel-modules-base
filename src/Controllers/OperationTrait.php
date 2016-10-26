@@ -393,6 +393,7 @@ trait OperationTrait
         if ( ! $this->repo->upload($this->model, $this->request) ) {
             return false;
         }
+
         return $this->repo->getDatas($this->request);
     }
 
