@@ -5,6 +5,7 @@ namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use Laracasts\Flash\Flash;
+use Config;
 
 use ErenMustafaOzdal\LaravelModulesBase\Repositories\FileRepository;
 use ErenMustafaOzdal\LaravelModulesBase\Repositories\ImageRepository;
@@ -652,5 +653,29 @@ trait OperationTrait
         $clone = $model->replicate();
         $clone->push();
         return $clone;
+    }
+
+    /**
+     * set the module config
+     *
+     * @param $category
+     * @param string $model
+     * @param string $uploadType
+     * @return void
+     */
+    protected function setModuleThumbnails($category, $model, $uploadType)
+    {
+        $module = getModule(get_called_class());
+        if (is_null($category->thumbnails)) {
+            return;
+        }
+        Config::set("{$module}.{$model}.uploads.{$uploadType}.thumbnails",$category->thumbnails->map(function($item)
+        {
+            return [
+                'width' => $item->photo_width,
+                'height'=> $item->photo_height,
+                'slug'  => $item->slug
+            ];
+        })->keyBy('slug')->toArray());
     }
 }

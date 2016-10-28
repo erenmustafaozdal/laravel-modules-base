@@ -235,6 +235,17 @@ trait ModelDataTrait
     }
 
     /**
+     * get activated data
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActivated($query)
+    {
+        return $query->whereIsActive(true);
+    }
+
+    /**
      * get has a minimum one published child element of category
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
@@ -356,7 +367,18 @@ trait ModelDataTrait
      */
     public function getCreatedAtAttribute($date)
     {
-        return Carbon::parse($date)->format(config('laravel-user-module.date_format'));
+        $module = getModule(get_class());
+        return Carbon::parse($date)->format(config("{$module}.date_format"));
+    }
+
+    /**
+     * Get the created_at attribute.
+     *
+     * @return string
+     */
+    public function getCreatedAtDateAttribute($date)
+    {
+        return Carbon::parse($this->created_at)->format('d.m.Y');
     }
 
     /**
@@ -390,7 +412,8 @@ trait ModelDataTrait
      */
     public function getUpdatedAtAttribute($date)
     {
-        return Carbon::parse($date)->format(config('laravel-user-module.date_format'));
+        $module = getModule(get_class());
+        return Carbon::parse($date)->format(config("{$module}.date_format"));
     }
 
     /**
