@@ -29,7 +29,12 @@ class RelatedModel
         $model = is_numeric($params[0]) ? $model::findOrFail($params[0]) : $params[0];
         $relation_id = is_numeric($params[1]) ? $params[1] : $params[1]->id;
 
-        if ( is_null($model->$relation()->where('id',$relation_id)->first()) ) {
+        $relationModel = $model->descendantsAndSelf()->whereHas($relation, function($query) use($relation_id)
+        {
+            return $query->whereId($relation_id);
+        })->get();
+
+        if ( $relationModel->isEmpty() ) {
             abort(404);
         }
 
