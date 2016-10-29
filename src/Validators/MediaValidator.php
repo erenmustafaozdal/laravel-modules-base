@@ -11,7 +11,14 @@ class MediaValidator extends Validator
      *
      * @var string
      */
-    private $urlRegex = '/^https:\/\/www\.youtube\.com\/watch\?v=([^\&\?\/]+)/';
+    private $youtubeRegex = '/^http(s)?:\/\/(www\.)?youtube\.com\/watch\?v=([^\&\?\/]+)/';
+
+    /**
+     * vimedo url regex
+     *
+     * @var string
+     */
+    private $vimeoRegex = '/^http(s)?:\/\/(www\.)?vimeo\.com\/([^\&\?\/]+)/';
 
     /**
      * validator youtube link
@@ -23,9 +30,9 @@ class MediaValidator extends Validator
      * @param $validator
      * @return bool
      */
-    public function validateYoutubeLink($attribute, $value, $parameters, $validator)
+    public function validateVideoLink($attribute, $value, $parameters, $validator)
     {
-        return preg_match($this->urlRegex, $value);
+        return preg_match($this->youtubeRegex, $value) || preg_match($this->vimeoRegex, $value);
     }
 
 }
