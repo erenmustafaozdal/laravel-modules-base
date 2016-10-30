@@ -136,6 +136,7 @@ class ImageRepository extends FileRepository
     private function resizeImage($request, $photoKey, $thumbnail)
     {
         $newRequest = $this->getSizeParameters($request);
+
         if ( $newRequest['width'][$photoKey] == 0 ) {
             $thumbnail = $request->has('crop_type') ? $this->getCropTypeSize($thumbnail,$request->get('crop_type')) : $thumbnail;
             $this->image->fit($thumbnail['width'], $thumbnail['height'], function($constraint)
@@ -144,7 +145,6 @@ class ImageRepository extends FileRepository
             });
             return;
         }
-
         $this->image->crop($newRequest['width'][$photoKey], $newRequest['height'][$photoKey], $newRequest['x'][$photoKey], $newRequest['y'][$photoKey])
             ->resize($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
@@ -190,19 +190,22 @@ class ImageRepository extends FileRepository
      */
     private function getSizeParameters($request)
     {
+        $input = isset($this->options['group'])
+            ? "{$this->options['group']}.{$this->options['index']}"
+            : (isset($this->options['inputPrefix']) ? "{$this->options['inputPrefix']}" : '');
         return [
-            'x'     => isset($this->options['group'])
-                ? [$request->input("{$this->options['group']}.{$this->options['index']}.x")]
-                : (is_array($request->x) ? $request->x : [$request->x]),
-            'y'     => isset($this->options['group'])
-                ? [$request->input("{$this->options['group']}.{$this->options['index']}.y")]
-                : (is_array($request->y) ? $request->y : [$request->y]),
-            'width' => isset($this->options['group'])
-                ? [$request->input("{$this->options['group']}.{$this->options['index']}.width")]
-                : (is_array($request->width) ? $request->width : [$request->width]),
-            'height'=> isset($this->options['group'])
-                ? [$request->input("{$this->options['group']}.{$this->options['index']}.height")]
-                : (is_array($request->height) ? $request->height : [$request->height]),
+            'x'     => is_array($request->input("{$input}x"))
+                ? $request->input("{$input}x")
+                : [$request->input("{$input}x")],
+            'y'     => is_array($request->input("{$input}y"))
+                ? $request->input("{$input}y")
+                : [$request->input("{$input}y")],
+            'width' => is_array($request->input("{$input}width"))
+                ? $request->input("{$input}width")
+                : [$request->input("{$input}width")],
+            'height'=> is_array($request->input("{$input}height"))
+                ? $request->input("{$input}height")
+                : [$request->input("{$input}height")],
         ];
     }
 }

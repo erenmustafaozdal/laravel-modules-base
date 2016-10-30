@@ -43,9 +43,15 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
                 || $request->has($inputName)
             ) {
                 $moduleOptions = config("{$module}.{$model}.uploads.{$configName}");
+                // if column is array
+                if (is_array($moduleOptions['column'])) {
+                    $moduleOptions['column'] = $moduleOptions['column'][$inputName];
+                }
+                // is group
                 if ($isGroup) {
                     $moduleOptions['group'] = $optionName['group'];
                 }
+                // add some data
                 if ($isGroup || isset($optionName['column'])) {
                     $moduleOptions['index'] = $column;
                     if (isset($optionName['changeThumb'])) $moduleOptions['changeThumb'] = $optionName['changeThumb'];

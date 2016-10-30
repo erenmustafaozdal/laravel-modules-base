@@ -71,6 +71,7 @@ class FileRepository extends Filesystem
                 $this->setFileSize($file);
                 $this->files[] = $this->moveFile($file, $model);
             }
+            dd($this->files);
             return $this->files;
         }
         return false;
@@ -108,6 +109,15 @@ class FileRepository extends Filesystem
      */
     protected function setFileName($file)
     {
+        $thumbs = isset($this->options['changeThumb'])
+            ? $this->options['thumbnails'][$this->options['changeThumb']]
+            : $this->options['thumbnails'];
+        $thumbs = array_values($thumbs);
+        $firstThumb = array_shift($thumbs);
+        if (isset($firstThumb['name'])) {
+            $this->fileName = $firstThumb['name'];
+            return;
+        }
         $this->fileName = $this->createFileName($file);
     }
 
@@ -329,7 +339,7 @@ class FileRepository extends Filesystem
             return true;
         }
 
-        if ($this->options['relation'] !== 'hasMany') {
+        if ($this->options['relation'] !== 'hasMany' && ( ! isset($this->options['is_reset']) ||  $this->options['is_reset']) ) {
             $this->cleanDirectory($path);
         }
         return true;
