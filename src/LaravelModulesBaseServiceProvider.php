@@ -6,6 +6,7 @@ use ErenMustafaOzdal\LaravelModulesBase\Services\CollectionService;
 use ErenMustafaOzdal\LaravelModulesBase\Services\PermissionService;
 use Illuminate\Support\ServiceProvider;
 use ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator;
+use ErenMustafaOzdal\LaravelModulesBase\Validators\ColorValidator;
 use ErenMustafaOzdal\LaravelModulesBase\Validators\MediaValidator;
 
 class LaravelModulesBaseServiceProvider extends ServiceProvider
@@ -123,6 +124,11 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
             // youtube validator
             if(array_key_exists('video',$data)) {
                 return new MediaValidator($translator, $data, $rules, $messages);
+            }
+
+            // hex validator
+            if(array_key_exists('site_first_color',$data) || array_key_exists('first_footer_color',$data)) {
+                return new ColorValidator($translator, $data, $rules, $messages);
             }
 
             // elfinder validator
