@@ -301,6 +301,16 @@ trait ModelDataTrait
     }
 
     /**
+     * Get the title uppercase attribute.
+     *
+     * @return string
+     */
+    public function getTitleUpperAttribute()
+    {
+        return strtoupper_tr($this->title);
+    }
+
+    /**
      * Set slug encrypted
      *
      * @param $slug
