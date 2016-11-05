@@ -59,7 +59,7 @@ trait OperationNodeTrait
     {
         DB::beginTransaction();
         try {
-            $datas = $this->request->parent != 0 ? $this->getDefineDatas($class) : $this->request->all();
+            $datas = $this->request->parent != 0 || $this->request->related != 0 ? $this->getDefineDatas($class) : $this->request->all();
             $this->model = $class::create($datas);
             $this->model->setNode($class, $this->request);
 
@@ -185,7 +185,7 @@ trait OperationNodeTrait
     protected function getDefineDatas($class)
     {
         $class = is_string($class) ? $class : get_class($class);
-        $id = $this->request->has('parent') ? $this->request->parent : $this->request->related;
+        $id = $this->request->has('parent') && $this->request->parent != 0 ? $this->request->parent : $this->request->related;
         $parent = $class::findOrFail($id);
         $datas = $this->request->all();
         foreach($this->defineValues as $value) {
