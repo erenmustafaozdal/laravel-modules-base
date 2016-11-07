@@ -124,7 +124,7 @@ trait ModelDataTrait
         if (is_null($file)) {
             return '';
         }
-        $src = $this->getFileSrc($file, $relation);
+        $src = $this->getFileDownloadSrc($file, $relation);
         $attr = $this->getHTMLAttributes($attributes);
         return $onlyUrl ? asset($src) : '<a href="'.asset($src).'" '.$attr.'> ' . $file . '</a>';
     }
@@ -171,6 +171,19 @@ trait ModelDataTrait
         }
         $src .= $type === 'original' ? "original/{$file}" : "thumbnails/{$type}_{$file}";
         return $src;
+    }
+
+    /**
+     * get the file download src
+     *
+     * @param string $file
+     * @param string|null $relation
+     * @return string
+     */
+    private function getFileDownloadSrc($file, $relation)
+    {
+        $id = is_null($relation) ? $this->id : $this->$relation;
+        return route('download.document',['id' => $id]);
     }
 
     /**
