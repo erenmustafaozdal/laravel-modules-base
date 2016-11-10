@@ -80,7 +80,7 @@ class BaseNodeController extends Controller implements OperationInterface
     protected function setRelationDefine($parent)
     {
         $this->changeRelationModel();
-        $this->setDefineValues(['has_description','has_photo','show_title','show_description','show_photo','datatable_filter','datatable_tools','datatable_fast_add','datatable_group_action','datatable_detail','description_is_editor','config_propagation','photo_width','photo_height']);
+        $this->setDefineValues($this->defineValues);
         $this->relations['thumbnails']['datas'] = $parent->thumbnails()->get(['slug','photo_width','photo_height'])->toArray();
         $this->relations['extras']['datas'] = $parent->extras()->get(['name','type'])->toArray();
         $this->setOperationRelation($this->relations);
