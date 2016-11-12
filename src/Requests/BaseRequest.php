@@ -54,10 +54,26 @@ class BaseRequest extends Request
             $this->rules[$attribute] = "elfinder_max:{$size}|elfinder:{$mimes}";
         } else  if ($this->file($attribute) && is_array($this->$attribute)){
             $this->rules[$attribute] = "array|max:{$count}";
-            for($i = 0; $i < count($this->file($attribute)); $i++) {
-                $this->rules[$attribute . '.' . $i] = "max:{$size}|image|mimes:{$mimes}";
+            foreach($this->file($attribute) as $key => $file) {
+                if(array_search($key, ['x','y','width','height']) !== false) {
+                    continue;
+                }
+
+                $this->rules[$attribute . '.' . $key] = "max:{$size}|image|mimes:{$mimes}";
                 if ($isRequired) {
-                    $this->rules[$attribute . '.' . $i] = "required|{$this->rules[$attribute . '.' . $i]}";
+                    $this->rules[$attribute . '.' . $key] = "required|{$this->rules[$attribute . '.' . $key]}";
+                }
+            }
+        } else if ($this->has($attribute) && is_array($this->$attribute)) {
+            $this->rules[$attribute] = "array|max:{$count}";
+            foreach($this->get($attribute) as $key => $file) {
+                if(array_search($key, ['x','y','width','height']) !== false) {
+                    continue;
+                }
+
+                $this->rules[$attribute . '.' . $key] = "elfinder_max:{$size}|elfinder:{$mimes}";
+                if ($isRequired) {
+                    $this->rules[$attribute . '.' . $key] = "required|{$this->rules[$attribute . '.' . $key]}";
                 }
             }
         } else if ($this->file($attribute)) {

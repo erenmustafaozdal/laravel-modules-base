@@ -557,11 +557,12 @@ trait OperationTrait
      * group operation alias method
      *
      * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string $subBase
      * @return boolean
      */
-    protected function groupAlias($model)
+    protected function groupAlias($model, $subBase = 'Events')
     {
-        $namespace = getBaseName($model, 'Events');
+        $namespace = getBaseName($model, $subBase);
         $events = [];
         switch($this->request->action) {
             case 'activate':

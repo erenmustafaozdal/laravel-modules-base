@@ -5,9 +5,7 @@ namespace ErenMustafaOzdal\LaravelModulesBase;
 use ErenMustafaOzdal\LaravelModulesBase\Services\CollectionService;
 use ErenMustafaOzdal\LaravelModulesBase\Services\PermissionService;
 use Illuminate\Support\ServiceProvider;
-use ErenMustafaOzdal\LaravelModulesBase\Validators\ElfinderValidator;
-use ErenMustafaOzdal\LaravelModulesBase\Validators\ColorValidator;
-use ErenMustafaOzdal\LaravelModulesBase\Validators\MediaValidator;
+use ErenMustafaOzdal\LaravelModulesBase\Validators\BaseValidator;
 
 class LaravelModulesBaseServiceProvider extends ServiceProvider
 {
@@ -121,18 +119,7 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
          */
         $validator->resolver(function($translator, $data, $rules, $messages)
         {
-            // youtube validator
-            if(array_key_exists('video',$data)) {
-                return new MediaValidator($translator, $data, $rules, $messages);
-            }
-
-            // hex validator
-            if(array_key_exists('site_first_color',$data) || array_key_exists('first_footer_color',$data)) {
-                return new ColorValidator($translator, $data, $rules, $messages);
-            }
-
-            // elfinder validator
-            return new ElfinderValidator($translator, $data, $rules, $messages);
+            return new BaseValidator($translator, $data, $rules, $messages);
         });
         $validator->replacer('elfinder_max', function($message, $attribute, $rule, $parameters) {
             return str_replace(':size',$parameters[0],$message);
