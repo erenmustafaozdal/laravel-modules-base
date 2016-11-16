@@ -141,7 +141,8 @@ class ImageRepository extends FileRepository
             $thumbnail = $request->has('crop_type') ? $this->getCropTypeSize($thumbnail,$request->get('crop_type')) : $thumbnail;
             $this->image->fit($thumbnail['width'], $thumbnail['height'], function($constraint)
             {
-                $constraint->upsize();
+                $constraint->aspectRatio();
+//                $constraint->upsize();
             });
             return;
         }
