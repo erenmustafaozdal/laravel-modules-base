@@ -23,9 +23,18 @@
         "laracasts/flash": "2.0.*",
         "cartalyst/sentinel": "2.0.*",
         "yajra/laravel-datatables-oracle": "6.10.*",
-        "intervention/image": "2.3.*"
+        "intervention/image": "2.3.*",
+        "snowfire/beautymail": "dev-master"
     },
     "require-dev": {
 
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "php artisan vendor:publish --provider='Snowfire\\Beautymail\\BeautymailServiceProvider'"
+        ],
+        "post-update-cmd": [
+            "php artisan vendor:publish --provider='Snowfire\\Beautymail\\BeautymailServiceProvider'"
+        ]
     }
 }

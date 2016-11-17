@@ -1,6 +1,34 @@
 <?php
 
 return [
+    // email
+    'email' => [
+        'error'     => [
+            'subject'       => 'Sistem Hatası',
+            'title'         => 'Sistem Hatası',
+            'info_title'    => 'Bilgiler',
+            'date'          => 'Tarih',
+            'ip'            => 'IP',
+            'id'            => 'Kullanıcı ID',
+            'fullname'      => 'Kullanıcı Adı',
+            'email'         => 'Kullanıcı E-posta',
+            'old_session'   => 'Old Session',
+            'new_session'   => 'New Session',
+            'request_all'   => 'Request All',
+            'decoded_path'  => 'Decoded Path',
+            'path'          => 'Path',
+            'full_url'      => 'Full Url',
+            'url'           => 'Url',
+            'domain'        => 'Domain',
+            'method'        => 'Metot',
+            'message'       => 'Mesaj',
+            'code'          => 'Durum Kodu',
+            'file'          => 'Dosya',
+            'line'          => 'Satır',
+            'previous'      => 'Önceki Url',
+            'trace'         => 'Trace',
+        ]
+    ],
     // flash messages
     'flash' => [
         'store_success'             => 'Ekleme işlemi başarılı bir şekilde gerçekleşti.',

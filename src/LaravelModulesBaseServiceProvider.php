@@ -32,6 +32,11 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/laravel-modules-base.php'   => config_path('laravel-modules-base.php')
         ], 'config');
+
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-modules-base');
+        $this->publishes([
+            __DIR__.'/../resources/views' => base_path('resources/views/vendor/laravel-modules-base'),
+        ]);
     }
 
     /**
@@ -45,6 +50,7 @@ class LaravelModulesBaseServiceProvider extends ServiceProvider
         $this->app->register('Yajra\Datatables\DatatablesServiceProvider');
         $this->app->register('Cartalyst\Sentinel\Laravel\SentinelServiceProvider');
         $this->app->register('Intervention\Image\ImageServiceProvider');
+        $this->app->register('Snowfire\Beautymail\BeautymailServiceProvider');
 
         $this->mergeConfigFrom(
             __DIR__.'/../config/laravel-modules-base.php', 'laravel-modules-base'
