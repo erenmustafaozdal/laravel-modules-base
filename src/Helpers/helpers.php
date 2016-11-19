@@ -222,15 +222,8 @@ if (! function_exists('lmbRoute')) {
     {
         $anchor = '#not-permission';
         // route yoksa dön
-        if ( ! Route::has($name) ) {
-            return $anchor;
-        }
-
-        $prefixes = LMBPermission::getRoutePrefix();
-        $authUser = Sentinel::check();
-        $namePrefix = explode('.',$name)[0];
-        // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
-        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! Sentinel::hasAccess($name) ) {
+        $hackRoute = routeHack($name,$parameters);
+        if ( ! hasPermission($hackRoute) ) {
             return $anchor;
         }
 
@@ -307,5 +300,73 @@ if (! function_exists('hex2rgba')) {
 
         //Return rgb(a) color string
         return $output;
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| hack route and parameter
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('routeHack')) {
+    /**
+     * Generate a URL to a named route.
+     *
+     * @param  string  $name
+     * @param  array   $parameters
+     * @return string
+     */
+    function routeHack($name, $parameters = [])
+    {
+        $implodes = implode('#####', $parameters);
+        $hacked = $name;
+        if (count($implodes) > 0) {
+            $hacked .= '#####' . $implodes;
+        }
+        return $hacked;
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| hack route to normal route
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('hackToRoute')) {
+    /**
+     * @param string $hackRoute
+     * @return string
+     */
+    function hackToRoute($hackRoute)
+    {
+        return explode('#####',$hackRoute)[0];
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| has permission hack route
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('hasPermission')) {
+    /**
+     * @param string $hackRoute
+     * @return boolean
+     */
+    function hasPermission($hackRoute)
+    {
+        if(
+            Route::has(hackToRoute($hackRoute))
+            && (\Sentinel::getUser()->is_super_admin || \Sentinel::hasAccess($hackRoute))
+        ) {
+            return true;
+        }
+        return false;
     }
 }

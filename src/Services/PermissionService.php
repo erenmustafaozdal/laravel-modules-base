@@ -2,246 +2,100 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Services;
 
-use Illuminate\Routing\Router;
-
 class PermissionService
 {
     /**
-     * which i will take route name
+     * ErenMustafaOzdal providers
+     *
      * @var array
      */
-    private $routePrefix = ['admin', 'api'];
+    private $myModules;
 
     /**
-     * Router class object
-     * @var Router $route
+     * routes
+     *
+     * @var array
      */
-    protected $router;
+    public $routes = [];
 
     /**
-     * route collection
-     * @var $routeCollection
-     */
-    protected $routeCollection;
-
-    /**
-     * all route names
+     * route names
+     *
      * @var \Illuminate\Support\Collection
      */
-    protected $allRouteNames;
+    public $routeNames;
+
+    /**
+     * counts
+     *
+     * @var array
+     */
+    public $counts = [ 'module' => 0, 'route' => 0 ];
 
     /**
      * construct method
-     *
-     * @param Router $router
      */
-    public function __construct(Router $router = null)
+    public function __construct()
     {
-        if (is_null($router)) {
-            return;
-        }
-        $this->router = $router;
-        $this->routeCollection = $this->router->getRoutes();
-        $this->allRouteNames = collect([ 'all' => collect() ]);
-        foreach($this->routePrefix as $routePrefix) {
-            $this->allRouteNames->put($routePrefix, collect());
-        }
-        $this->takeNames();
+        $this->myModules = $this->getMyModules();
+        $this->setRoutes();
+        $this->setCounts();
     }
 
     /**
-     * take route names
+     * set routes
      *
      * @return void
      */
-    protected function takeNames()
+    private function setRoutes()
     {
-        foreach($this->routeCollection as $route) {
-            $this->detect($route);
-        }
-    }
-
-    /**
-     * detect route name with its prefix
-     *
-     * @param $route
-     * @return boolean
-     */
-    protected function detect($route)
-    {
-        $action = $route->getAction();
-        if ( ! isset($action['as'])) {
-            return false;
-        }
-
-        $routeName = $action['as'];
-        $prefix = strchr($routeName, '.', true);
-        if ( $prefix === false ||  ! in_array($prefix, $this->routePrefix) ) {
-            return false;
-        }
-
-        $subRoute = substr( strchr($routeName, '.'), 1);
-        $transaction = substr( strchr($subRoute, '.'), 1);
-        // eğer api ise create, show ve edit iptal et
-        if ($prefix === 'api' && in_array($transaction, ['create','show','edit'])) {
-            return false;
-        }
-
-        $parts = $this->getHyphenNameSpace($action['controller']);
-        $namespace = $parts['namespace'];
-        $controller = $parts['controller'];
-
-        $this->allRouteNames['all']->put($routeName, [
-            'namespace'     => $namespace,
-            'controller'    => $controller,
-            'route'         => $routeName,
-            'sub_route'     => $subRoute
-        ]);
-        $this->allRouteNames[$prefix]->put($routeName, [
-            'namespace'     => $namespace,
-            'controller'    => $controller,
-            'route'         => $routeName,
-            'sub_route'     => $subRoute
-        ]);
-    }
-
-    /**
-     * get hyphen namespace
-     *
-     * @param string $action
-     * @return array
-     */
-    protected function getHyphenNameSpace($action)
-    {
-        $parts_of_namespace = explode('\\', $action);
-        $parts = explode('@', $action);
-        if ($parts_of_namespace[0] !== 'ErenMustafaOzdal') {
-            $parent_action = get_parent_class( new $parts[0]() );
-            $parts_of_namespace = explode('\\', $parent_action);
-        }
-        $controller = explode('\\',$parts[0]);
-        $controller = end( $controller );
-        $namespace = preg_replace( '/([a-zA-Z])(?=[A-Z])/', '$1-', $parts_of_namespace[1] );
-        return [
-            'controller'    => $controller,
-            'namespace'     => strtolower($namespace)
-        ];
-    }
-
-    /**
-     * get route collection
-     *
-     * @return \Illuminate\Routing\RouteCollection
-     */
-    public function getCollection()
-    {
-        return $this->routeCollection;
-    }
-
-    /**
-     * get all route names
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getNames()
-    {
-        return $this->allRouteNames;
-    }
-
-    /**
-     * get route names with specific prefix
-     *
-     * @param string $prefix
-     * @return \Illuminate\Support\Collection | boolean
-     */
-    public function getSpecificNames($prefix)
-    {
-        if ( ! $names = $this->allRouteNames->get($prefix) ) {
-            return false;
-        }
-         return collect($names);
-    }
-
-    /**
-     * get route names with parts without all key
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getNameParts()
-    {
-        return $this->allRouteNames->except('all');
-    }
-
-    /**
-     * get route names with all key
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAllNames()
-    {
-        return $this->allRouteNames->get('all');
-    }
-
-    /**
-     * get route names with group by controller name
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function groupByController()
-    {
-        return $this->getAllNames()->groupBy(function ($item, $key)
-        {
-            if ( $item['namespace'] === 'laravel-modules-core' ) {
-                return "{$item['namespace']}::admin.permission.{$item['controller']}";
+        foreach($this->myModules as $module) {
+            $scModule = snake_case( $module, '-' );
+            $subModules = config("{$scModule}.permissions");
+            if ( ! is_null($subModules)) {
+                foreach($subModules as $sub => $routes) {
+                    $hasRoutes = array_filter(array_keys($routes['routes']),function($item)
+                    {
+                        return hasPermission($item);
+                    });
+                    if(count($hasRoutes) > 0) {
+                        $this->routes[$scModule . '_' . $sub] = $routes;
+                    }
+                }
             }
-            return "laravel-modules-core::{$item['namespace']}/admin.permission.{$item['controller']}";
-        })->sortBy(function ($item, $key) {
-            return $key;
-        });
+        }
     }
 
     /**
-     * get route names for the blade
+     * set module, part, route counts
      *
-     * @return \Illuminate\Support\Collection
+     * @return void
      */
-    public function namesForBlade()
+    private function setCounts()
     {
-        return $this->groupByController()->each(function ($item, $key)
-        {
-            $item["{$item[0]['namespace']}::admin.permission.{$key}"] = $item;
-            return $item;
-        });
+        foreach($this->routes as $module) {
+            $this->counts['module']++;
+            foreach($module['routes'] as $route) {
+                $this->counts['route']++;
+            }
+        }
     }
 
     /**
-     * get all permission route names count
-     *
-     * @return integer
-     */
-    public function permissionCount()
-    {
-        return $this->getAllNames()->count();
-    }
-
-    /**
-     * get permission rate
-     *
-     * @param integer $count
-     * @return integer
-     */
-    public function permissionRate($count)
-    {
-        return intval( getPercent($this->getAllNames()->count(),$count) );
-    }
-
-    /**
-     * get route prefixes
+     * get ErenMustafaOzdal namespace provider
      *
      * @return array
      */
-    public function getRoutePrefix()
+    protected function getMyModules()
     {
-        return $this->routePrefix;
+        $all = array_keys( app()->getLoadedProviders() );
+        $modules = [];
+        foreach($all as $provider) {
+            $parts = explode('\\', $provider);
+            if ($parts[0] === 'ErenMustafaOzdal' && array_search($parts[1],$modules) === false) {
+                array_push($modules, snake_case($parts[1], '-'));
+            }
+        }
+        return $modules;
     }
 }
