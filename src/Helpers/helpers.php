@@ -326,6 +326,12 @@ if (! function_exists('routeHack')) {
      */
     function routeHack($name, $parameters = [])
     {
+        $hackable = ['page_category','document_category','description_category','media_category'];
+        $parts = explode('.',$name);
+        if ($parts[0] != 'admin' || ! in_array($parts[1], $hackable)) {
+            return $name;
+        }
+
         $implodes = implode('#####', $parameters);
         $hacked = $name;
         if (count($parameters) > 0) {

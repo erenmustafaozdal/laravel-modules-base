@@ -48,25 +48,30 @@ class Permission
     {
         $route = Route::currentRouteName();
         $method = $request->method();
+        $parameters = Route::current()->parameters();
+        $hackedRoute = routeHack($route,$parameters);
 
         // if user destroy route
         if (
             $method == 'GET'
             && in_array($route, $this->userDestroyRoutes)
+            && !is_null(Request::route('users'))
             && Request::route('users')->id === Sentinel::getUser()->id
         ) {
             abort(403);
         }
 
+//        dd(! in_array($route, $this->userRoutes));
         if (
             $method == 'GET'
             && ! Sentinel::getUser()->is_super_admin
             && (
                 (
                     ! in_array($route, $this->userRoutes)
+                    || is_null(Request::route('users'))
                     || Request::route('users')->id !== Sentinel::getUser()->id
                 )
-                && ! Sentinel::hasAccess( $route )
+                && ! hasPermission($hackedRoute)
             )
         ) {
             abort(403);
