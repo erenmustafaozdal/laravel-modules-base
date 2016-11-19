@@ -222,8 +222,14 @@ if (! function_exists('lmbRoute')) {
     {
         $anchor = '#not-permission';
         // route yoksa dön
-        $hackRoute = routeHack($name,$parameters);
-        if ( ! hasPermission($hackRoute) ) {
+        if ( ! \Route::has($name) ) {
+            return $anchor;
+        }
+        $prefixes = ['admin','api'];
+        $authUser = \Sentinel::check();
+        $namePrefix = explode('.',$name)[0];
+        // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
+        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) ) {
             return $anchor;
         }
 
