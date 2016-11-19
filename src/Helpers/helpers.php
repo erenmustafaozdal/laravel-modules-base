@@ -322,7 +322,7 @@ if (! function_exists('routeHack')) {
     {
         $implodes = implode('#####', $parameters);
         $hacked = $name;
-        if (count($implodes) > 0) {
+        if (count($parameters) > 0) {
             $hacked .= '#####' . $implodes;
         }
         return $hacked;
@@ -356,14 +356,35 @@ if (! function_exists('hackToRoute')) {
 */
 if (! function_exists('hasPermission')) {
     /**
-     * @param string $hackRoute
+     * @param string|array $hackRoute
      * @return boolean
      */
     function hasPermission($hackRoute)
     {
+        if(is_array($hackRoute)) {
+            foreach($hackRoute as $route) {
+                if(hasPermission($route)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        $prefixes = ['admin','api'];
+        $route = hackToRoute($hackRoute);
+        $routePrefix = explode('.',$route)[0];
         if(
-            Route::has(hackToRoute($hackRoute))
-            && (\Sentinel::getUser()->is_super_admin || \Sentinel::hasAccess($hackRoute))
+            ! in_array($routePrefix,$prefixes)
+            || (
+                Route::has($route)
+                && (
+                    ! is_null(\Sentinel::getUser())
+                    && (
+                        \Sentinel::getUser()->is_super_admin
+                        || \Sentinel::hasAccess($hackRoute)
+                    )
+                )
+            )
         ) {
             return true;
         }
