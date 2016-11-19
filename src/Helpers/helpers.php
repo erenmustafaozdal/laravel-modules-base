@@ -326,9 +326,7 @@ if (! function_exists('routeHack')) {
      */
     function routeHack($name, $parameters = [])
     {
-        $hackable = ['page_category','document_category','description_category','media_category'];
-        $parts = explode('.',$name);
-        if ($parts[0] != 'admin' || ! in_array($parts[1], $hackable)) {
+        if ( ! routeHackable($name)) {
             return $name;
         }
 
@@ -338,6 +336,26 @@ if (! function_exists('routeHack')) {
             $hacked .= '#####' . $implodes;
         }
         return $hacked;
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| hackable route
+|--------------------------------------------------------------------------
+*/
+if (! function_exists('routeHackable')) {
+    /**
+     * @param  string  $name
+     * @return boolean
+     */
+    function routeHackable($name)
+    {
+        $hackable = ['page_category','document_category','description_category','media_category'];
+        $parts = explode('.',$name);
+        return $parts[0] == 'admin' && in_array($parts[1], $hackable);
     }
 }
 
