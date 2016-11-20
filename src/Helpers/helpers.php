@@ -220,20 +220,20 @@ if (! function_exists('lmbRoute')) {
      */
     function lmbRoute($name, $parameters = [], $absolute = true)
     {
-        $anchor = '#not-permission';
-        // route yoksa dön
-        if ( ! \Route::has($name) ) {
-            return $anchor;
-        }
-        $prefixes = ['admin','api'];
-        $authUser = \Sentinel::check();
-        $namePrefix = explode('.',$name)[0];
-        $hackedRoute = routeHack($name,$parameters);
-
-        // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
-        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) && ! \Sentinel::hasAccess($hackedRoute) ) {
-            return $anchor;
-        }
+//        $anchor = '#not-permission';
+//        // route yoksa dön
+//        if ( ! \Route::has($name) ) {
+//            return $anchor;
+//        }
+//        $prefixes = ['admin','api'];
+//        $authUser = \Sentinel::check();
+//        $namePrefix = explode('.',$name)[0];
+//        $hackedRoute = routeHack($name,$parameters);
+//
+//        // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
+//        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) && ! \Sentinel::hasAccess($hackedRoute) ) {
+//            return $anchor;
+//        }
 
         return route($name, $parameters, $absolute);
     }
@@ -332,10 +332,9 @@ if (! function_exists('routeHack')) {
             return $name;
         }
 
-        $implodes = implode('#####', $parameters);
         $hacked = $name;
         if (count($parameters) > 0) {
-            $hacked .= '#####' . $implodes;
+            $hacked .= '#####' . $parameters['id'];
         }
         return $hacked;
     }
