@@ -2,6 +2,7 @@
 
 namespace ErenMustafaOzdal\LaravelModulesBase\Controllers;
 
+use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use Illuminate\Http\Request;
 use DB;
 use Laracasts\Flash\Flash;
@@ -582,6 +583,9 @@ trait OperationTrait
                 $events['fail'] = "{$namespace}\\NotPublishFail";
                 break;
             case 'destroy':
+                if ($model == 'App\User' && in_array(Sentinel::getUser()->id,$this->request->get('id'))) {
+                    abort(403);
+                }
                 break;
         }
         $this->setEvents($events);

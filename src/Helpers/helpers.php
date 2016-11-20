@@ -228,8 +228,10 @@ if (! function_exists('lmbRoute')) {
         $prefixes = ['admin','api'];
         $authUser = \Sentinel::check();
         $namePrefix = explode('.',$name)[0];
+        $hackedRoute = routeHack($name,$parameters);
+
         // route prefix içinde ise ve oturum açıksa ve süper yönetici değilse ve yetkisi yoksa
-        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) ) {
+        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) && ! \Sentinel::hasAccess($hackedRoute) ) {
             return $anchor;
         }
 
@@ -355,7 +357,7 @@ if (! function_exists('routeHackable')) {
     {
         $hackable = ['page_category','document_category','description_category','media_category'];
         $parts = explode('.',$name);
-        return $parts[0] == 'admin' && in_array($parts[1], $hackable);
+        return in_array($parts[1], $hackable);
     }
 }
 
