@@ -61,7 +61,7 @@ class Permission
             abort(403);
         }
 
-//        dd(! in_array($route, $this->userRoutes));
+//        dd($hackedRoute);
         if (
             $method == 'GET'
             && ! Sentinel::getUser()->is_super_admin

@@ -328,7 +328,7 @@ if (! function_exists('routeHack')) {
      */
     function routeHack($name, $parameters = [])
     {
-        if ( ! routeHackable($name)) {
+        if ( is_null($name) || ! routeHackable($name)) {
             return $name;
         }
 
@@ -356,7 +356,7 @@ if (! function_exists('routeHackable')) {
     {
         $hackable = ['page_category','document_category','description_category','media_category'];
         $parts = explode('.',$name);
-        return in_array($parts[1], $hackable);
+        return in_array($parts[1], $hackable) && ( $parts[0] === 'admin' || count($parts) > 3 );
     }
 }
 
