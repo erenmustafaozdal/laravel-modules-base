@@ -290,7 +290,7 @@ trait ModelDataTrait
      */
     public function getUrlLinkAttribute()
     {
-        return "<a href='{$this->url}'>{$this->url}</a>";
+        return lmcLink($this->url,$this->url);
     }
 
     /**
