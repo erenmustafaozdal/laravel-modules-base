@@ -5,6 +5,7 @@ namespace ErenMustafaOzdal\LaravelModulesBase\Exceptions;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Session\TokenMismatchException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use App;
@@ -28,6 +29,7 @@ class Handler extends ExceptionHandler
     protected $dontReport = [
         HttpException::class,
         ModelNotFoundException::class,
+        TokenMismatchException::class
     ];
 
     /**
@@ -59,16 +61,19 @@ class Handler extends ExceptionHandler
         $debug = config('app.debug');
         /*==========  hata olduğunda mail gönder  ==========*/
         if ( ! $debug) {
-            $mail = new MailService();
-            $mail->datas = $this->getEmailDatas($request,$e);
-            $mail->queue();
+            if ($this->shouldReport($e)) {
+                $mail = new MailService();
+                $mail->datas = $this->getEmailDatas($request, $e);
+                $mail->queue();
+            }
 
             // ilgili hata sayfası gösterilir
-            if (view()->exists($this->defaultViewPath . '.' . $e->getStatusCode()))
+            $code = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 200;
+            if (view()->exists($this->defaultViewPath . '.' . $code))
             {
-                return response()->view($this->defaultViewPath . '.' . $e->getStatusCode(), ['code' => $e->getStatusCode()], $e->getStatusCode());
+                return response()->view($this->defaultViewPath . '.' . $code, ['code' => $code], $code);
             }
-            return response()->view($this->defaultViewPath . '.default', [], $e->getStatusCode());
+            return response()->view($this->defaultViewPath . '.default', [], $code);
         }
 
         return parent::render($request, $e);
@@ -84,7 +89,7 @@ class Handler extends ExceptionHandler
     private function getEmailDatas($request, $e)
     {
         return [
-            'date'          => Carbon::now(),
+            'date'          => Carbon::now()->format('d.m.Y H:i:s'),
             'rUser'         => $request->user(),
             'rSessionOld'   => $request->session()->all()['flash']['old'],
             'rSessionNew'   => $request->session()->all()['flash']['new'],
@@ -96,11 +101,11 @@ class Handler extends ExceptionHandler
             'rUrl'          => $request->url(),
             'rRoot'         => $request->root(),
             'rMethod'       => $request->method(),
-            'eMessage'      => $e->getMessage(),
-            'eCode'         => $e->getStatusCode(),
-            'eFile'         => $e->getFile(),
-            'eLine'         => $e->getLine(),
-            'ePrevious'     => $e->getPrevious(),
+            'eMessage'      => method_exists($e, 'getMessage') ? $e->getMessage() : '',
+            'eCode'         => method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 200,
+            'eFile'         => method_exists($e, 'getFile') ? $e->getFile() : '',
+            'eLine'         => method_exists($e, 'getLine') ? $e->getLine() : '',
+            'ePrevious'     => is_string($e->getPrevious()) ? $e->getPrevious() : '',
             'eTrace'        => nl2br($e->getTraceAsString()),
         ];
     }

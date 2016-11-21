@@ -11,7 +11,7 @@
         <tbody>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.date') !!} : </b></td>
-            <td>{!! $date['date'] !!}</td>
+            <td>{!! $date !!}</td>
         </tr>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.id') !!} : </b></td>
