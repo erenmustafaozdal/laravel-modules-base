@@ -50,14 +50,14 @@ trait OperationTrait
      *
      * @var \Illuminate\Http\Request
      */
-    private $request;
+    protected $request;
 
     /**
      * files options
      *
      * @var array
      */
-    private $fileOptions = [];
+    protected $fileOptions = [];
 
     /**
      * operation events
