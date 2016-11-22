@@ -66,7 +66,7 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
                 ($isGroup && $request->has("{$optionName['group']}.{$column}.{$inputName}"))
                 || ($request->has($inputName) && ! $request->file($inputName)[0])
             ) {
-                $elfinderOption = $isGroup || isset($optionName['column'])  ? ['index' => $column, 'column' => $optionName['column']] : $fullColumn;
+                $elfinderOption = $isGroup || isset($optionName['column'])  ? ['index' => count($options)-1, 'column' => $optionName['column']] : $fullColumn;
                 array_push($elfinders, $elfinderOption);
             }
         }

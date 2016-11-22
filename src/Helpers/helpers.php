@@ -235,7 +235,7 @@ if (! function_exists('lmbRoute')) {
 //            return $anchor;
 //        }
 
-        return route($name, $parameters, $absolute);
+        return \Route::has($name) ? route($name, $parameters, $absolute) : 'javascript:;';
     }
 }
 

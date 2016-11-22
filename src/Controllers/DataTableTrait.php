@@ -100,11 +100,11 @@ trait DataTableTrait
     {
         $slug = getModelSlug($model);
         return [
-            'details'   => Route::has("api.{$slug}.detail") ? lmbRoute("api.{$slug}.detail", ['id' => $model->id]) : '',
-            'fast_edit' => Route::has("api.{$slug}.fastEdit") ? lmbRoute("api.{$slug}.fastEdit", ['id' => $model->id]) : '',
-            'edit'      => Route::has("api.{$slug}.update") ? lmbRoute("api.{$slug}.update", ['id' => $model->id]) : '',
-            'destroy'   => Route::has("api.{$slug}.destroy") ? lmbRoute("api.{$slug}.destroy", ['id' => $model->id]) : '',
-            'show'      => Route::has("admin.{$slug}.show") ? lmbRoute("admin.{$slug}.show", ['id' => $model->id]) : ''
+            'details'   => lmbRoute("api.{$slug}.detail", ['id' => $model->id]),
+            'fast_edit' => lmbRoute("api.{$slug}.fastEdit", ['id' => $model->id]),
+            'edit'      => lmbRoute("api.{$slug}.update", ['id' => $model->id]),
+            'destroy'   => lmbRoute("api.{$slug}.destroy", ['id' => $model->id]),
+            'show'      => lmbRoute("admin.{$slug}.show", ['id' => $model->id])
         ];
     }
 }
