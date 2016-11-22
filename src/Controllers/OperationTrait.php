@@ -206,7 +206,7 @@ trait OperationTrait
      * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function destroyModel($model, $path = null)
+    protected function destroyModel($model, $path = null)
     {
         $this->model = $model;
         try {
