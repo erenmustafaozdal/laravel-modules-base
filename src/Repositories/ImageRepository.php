@@ -193,7 +193,7 @@ class ImageRepository extends FileRepository
     {
         $input = isset($this->options['group'])
             ? "{$this->options['group']}.{$this->options['index']}"
-            : (isset($this->options['inputPrefix']) ? "{$this->options['inputPrefix']}" : '');
+            : (isset($this->options['inputPrefix']) && $this->options['inputPrefix'] ? "{$this->options['inputPrefix']}" : '');
         return [
             'x'     => is_array($request->input("{$input}x"))
                 ? $request->input("{$input}x")

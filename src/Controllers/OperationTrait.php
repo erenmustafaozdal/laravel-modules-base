@@ -437,7 +437,7 @@ trait OperationTrait
 
         // İlişkili sayfalardan index hariç
         if( $indexPos === false ) {
-            $id = $isUpdate && ! is_null($this->model->category_id) ? $this->model->category_id : ( $isUpdate ? $this->model->categories->first()->id : $this->relatedId);
+            $id = $isUpdate && ! is_null($this->model->category_id) && is_null($this->relatedId) ? $this->model->category_id : ( $isUpdate && is_null($this->relatedId) ? $this->model->categories->first()->id : $this->relatedId);
             return redirect( lmbRoute("admin.{$path}", [
                 'id'                => $id,
                 $this->routeRegex   => $this->model->id

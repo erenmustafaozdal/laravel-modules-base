@@ -23,7 +23,7 @@ class BaseRequest extends Request
         $messages = [];
 
         // photo message eklenir
-        if ($this->file('photo') && is_array($this->photo)) {
+        if ( ( $this->has('photo') || $this->file('photo') ) && is_array($this->photo)) {
             foreach ($this->photo as $key => $val) {
                 $item = $key + 1;
                 $messages['photo.' . $key . '.required'] = "{$item}. Fotoğraf alanı gereklidir.";
