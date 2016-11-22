@@ -16,7 +16,7 @@
             "src/Helpers/helpers.php"
         ]
     },
-    "minimum-stability": "beta",
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
         "illuminate/support": "~5",
