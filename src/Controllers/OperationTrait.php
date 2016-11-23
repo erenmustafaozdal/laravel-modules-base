@@ -111,7 +111,7 @@ trait OperationTrait
      * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function storeModel($class, $path = null)
+    public function storeModel($class, $path = null)
     {
         DB::beginTransaction();
         try {
@@ -158,7 +158,7 @@ trait OperationTrait
      * @param boolean $updateRelation
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function updateModel($model, $path = null, $updateRelation = false)
+    public function updateModel($model, $path = null, $updateRelation = false)
     {
         $this->model = $model;
         DB::beginTransaction();
@@ -206,7 +206,7 @@ trait OperationTrait
      * @param string|null $path
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function destroyModel($model, $path = null)
+    public function destroyModel($model, $path = null)
     {
         $this->model = $model;
         try {
