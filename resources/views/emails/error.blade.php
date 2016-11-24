@@ -27,15 +27,15 @@
         </tr>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.old_session') !!} : </b></td>
-            <td>@foreach($rSessionOld as $old) {!! $old !!}<br> @endforeach</td>
+            <td><pre><?php print_r($rSessionOld); ?></pre></td>
         </tr>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.new_session') !!} : </b></td>
-            <td>@foreach($rSessionNew as $new) {!! $new !!}<br> @endforeach</td>
+            <td><pre><?php print_r($rSessionNew); ?></pre></td>
         </tr>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.request_all') !!} : </b></td>
-            <td>@foreach($rAll as $key => $data) <b>{!! $key !!}:</b> {!! $data !!}<br> @endforeach</td>
+            <td><pre><?php print_r($rAll); ?></pre></td>
         </tr>
         <tr>
             <td width="150" valign="top"><b>{!! trans('laravel-modules-base::admin.email.error.ip') !!} : </b></td>

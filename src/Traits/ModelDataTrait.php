@@ -475,6 +475,97 @@ trait ModelDataTrait
         return "<a href='{$this->link->link}' target='_blank'> {$this->link->link} </a>";
     }
 
+    /**
+     * Set photo
+     *
+     * @param string $photo
+     */
+    public function setPhotoAttribute($photo)
+    {
+        if($photo === '' || is_array($photo)) {
+            return;
+        }
+        $this->attributes['photo'] =  $photo;
+    }
+
+    /**
+     * Set mini_photo
+     *
+     * @param string $mini_photo
+     */
+    public function setMiniPhotoAttribute($mini_photo)
+    {
+        if($mini_photo === '' || is_array($mini_photo)) {
+            return;
+        }
+        $this->attributes['mini_photo'] =  $mini_photo;
+    }
+
+    /**
+     * Set first_mini_photo
+     *
+     * @param string $first_mini_photo
+     */
+    public function setFirstMiniPhotoAttribute($first_mini_photo)
+    {
+        if(is_array($first_mini_photo)) {
+            return;
+        }
+        $this->attributes['first_mini_photo'] =  $first_mini_photo;
+    }
+
+    /**
+     * Set second_mini_photo
+     *
+     * @param string $second_mini_photo
+     */
+    public function setSecondMiniPhotoAttribute($second_mini_photo)
+    {
+        if(is_array($second_mini_photo)) {
+            return;
+        }
+        $this->attributes['second_mini_photo'] =  $second_mini_photo;
+    }
+
+    /**
+     * Set third_mini_photo
+     *
+     * @param string $third_mini_photo
+     */
+    public function setThirdMiniPhotoAttribute($third_mini_photo)
+    {
+        if(is_array($third_mini_photo)) {
+            return;
+        }
+        $this->attributes['third_mini_photo'] =  $third_mini_photo;
+    }
+
+    /**
+     * Set fourth_mini_photo
+     *
+     * @param string $fourth_mini_photo
+     */
+    public function setFourthMiniPhotoAttribute($fourth_mini_photo)
+    {
+        if(is_array($fourth_mini_photo)) {
+            return;
+        }
+        $this->attributes['fourth_mini_photo'] =  $fourth_mini_photo;
+    }
+
+    /**
+     * Set fifth_mini_photo
+     *
+     * @param string $fifth_mini_photo
+     */
+    public function setFifthMiniPhotoAttribute($fifth_mini_photo)
+    {
+        if(is_array($fifth_mini_photo)) {
+            return;
+        }
+        $this->attributes['fifth_mini_photo'] =  $fifth_mini_photo;
+    }
+
 
     /*
     |--------------------------------------------------------------------------
