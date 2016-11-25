@@ -38,6 +38,15 @@ class Permission
     ];
 
     /**
+     * except routes
+     *
+     * @var array
+     */
+    private $exceptRoutes = [
+        'admin.dashboard.index'
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -64,6 +73,7 @@ class Permission
 //        dd($hackedRoute);
         if (
             $method == 'GET'
+            && ! in_array($route, $this->exceptRoutes)
             && ! Sentinel::getUser()->is_super_admin
             && (
                 (
