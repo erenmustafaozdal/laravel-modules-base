@@ -144,7 +144,7 @@ if( ! function_exists('ucfirst_tr'))
             $first_letter = mb_strtoupper(mb_substr(str_replace(array('İ','i'),array('İ','İ'),$values[$i]), 0, 1, $encoding), $encoding);
 
             if ($lower_str_end) {
-                $value_end = mb_strtolower(mb_substr($values[$i], 1, mb_strlen($values[$i], $encoding), $encoding), $encoding);
+                $value_end = mb_strtolower(mb_substr(str_replace(array('I','ı'),array('ı','ı'),$values[$i]), 1, mb_strlen($values[$i], $encoding), $encoding), $encoding);
             } else {
                 $value_end = mb_substr($values[$i], 1, mb_strlen($values[$i], $encoding), $encoding);
             }
