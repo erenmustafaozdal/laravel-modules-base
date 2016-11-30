@@ -331,6 +331,16 @@ trait OperationTrait
                     if (isset($group['is_reset']) && $group['is_reset']) {
                         $this->model->$relation()->delete();
                     }
+
+                    // bu if image banner için eklenmiştir
+                    if (isset($group['changeToHasOne']) && $group['changeToHasOne']) {
+                        if (is_null($this->model->{$group['changeToHasOne']})) {
+                            $this->model->{$group['changeToHasOne']}()->save(new $group['relation_model']($group['datas'][0]));
+                            continue;
+                        }
+                        $this->model->{$group['changeToHasOne']}->fill($group['datas'][0])->save();
+                        continue;
+                    }
                     $this->model->$relation()->saveMany($relation_models);
                 }
                 continue;

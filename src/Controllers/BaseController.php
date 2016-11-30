@@ -55,6 +55,7 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
                 if ($isGroup || isset($optionName['column'])) {
                     $moduleOptions['index'] = $column;
                     if (isset($optionName['changeThumb'])) $moduleOptions['changeThumb'] = $optionName['changeThumb'];
+                    if (isset($optionName['changeToHasOne'])) $moduleOptions['changeToHasOne'] = $optionName['changeToHasOne'];
                     if (isset($optionName['is_reset'])) $moduleOptions['is_reset'] = $optionName['is_reset'];
                     $moduleOptions['add_column'] = isset($optionName['add_column']) ? $optionName['add_column'] : [];
                     $moduleOptions['inputPrefix'] = isset($optionName['inputPrefix']) ? $optionName['inputPrefix'] : [];
