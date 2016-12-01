@@ -399,7 +399,7 @@ trait ModelDataTrait
      *
      * @return string
      */
-    public function getCreatedAtDateAttribute($date)
+    public function getCreatedAtDateAttribute()
     {
         return Carbon::parse($this->created_at)->format('d.m.Y');
     }
