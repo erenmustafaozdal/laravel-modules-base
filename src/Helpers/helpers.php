@@ -234,7 +234,7 @@ if (! function_exists('lmbRoute')) {
 //        if ( in_array( $namePrefix, $prefixes ) && $authUser && ! $authUser->is_super_admin && ! \Sentinel::hasAccess($name) && ! \Sentinel::hasAccess($hackedRoute) ) {
 //            return $anchor;
 //        }
-
+        
         return \Route::has($name) ? route($name, $parameters, $absolute) : 'javascript:;';
     }
 }
