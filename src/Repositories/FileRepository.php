@@ -152,7 +152,7 @@ class FileRepository extends Filesystem
         $mime = $file->getClientOriginalExtension();
         $parts = explode('.',$filename);
         array_pop($parts);
-        return str_slug( implode(' ', $parts), '-' ) .  '.' . $mime;
+        return str_slug( implode(' ', $parts), '-' ) . '_' . time() .  '.' . $mime;
     }
 
     /**
@@ -203,7 +203,7 @@ class FileRepository extends Filesystem
     {
         $filename = substr( strrchr( $this->elfinderFilePath, '/' ), 1 );
         $parts = explode('.',$filename);
-        return str_slug($parts[0]) . '.' . $parts[1];
+        return str_slug($parts[0]) . '_' . time()  . '.' . $parts[count($parts-1)];
     }
 
     /**
