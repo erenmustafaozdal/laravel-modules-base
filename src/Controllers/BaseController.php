@@ -76,6 +76,7 @@ class BaseController extends Controller implements DataTablesInterface, Operatio
         foreach($elfinders as $elfinder) {
             $this->setElfinderToOptions($elfinder);
         }
+        dd($this->fileOptions);
     }
 
     /**
