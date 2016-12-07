@@ -14,6 +14,13 @@ class BaseRequest extends Request
     protected $rules = [];
 
     /**
+     * The input keys that should not be flashed on redirect.
+     *
+     * @var array
+     */
+    protected $dontFlash = ['password', 'password_confirmation','photo'];
+
+    /**
      * get message of the rules
      *
      * @return array
