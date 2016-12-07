@@ -203,7 +203,9 @@ class FileRepository extends Filesystem
     {
         $filename = substr( strrchr( $this->elfinderFilePath, '/' ), 1 );
         $parts = explode('.',$filename);
-        return str_slug($parts[0]) . '_' . time()  . '.' . $parts[count($parts-1)];
+        $last = array_pop($parts);
+        $filename = str_slug(implode('_',$parts)) . '_' . time();
+        return $filename  . '.' . $last;
     }
 
     /**
