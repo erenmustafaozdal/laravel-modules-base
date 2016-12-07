@@ -93,7 +93,7 @@ class ImageRepository extends FileRepository
     protected function original($photo, $path)
     {
         $this->makeDirectoryBeforeUpload($path, false);
-        Image::make( $photo )->encode('jpg')->save($path . '/' . $this->fileName );
+        Image::make( $photo )->encode('jpg')->save($path . '/' . $this->fileName, 100 );
         return '/' . $path . '/' . $this->fileName;
     }
 
@@ -119,7 +119,7 @@ class ImageRepository extends FileRepository
                 ->encode('jpg');
 
             $this->resizeImage($request, $photoKey, $thumb);
-            $this->image->save($thumb_path);
+            $this->image->save($thumb_path, 100);
             $photos[$name] = '/' . $thumb_path;
         }
         return $photos;
