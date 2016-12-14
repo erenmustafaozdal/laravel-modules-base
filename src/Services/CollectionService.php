@@ -29,7 +29,7 @@ class CollectionService
      */
     public function renderAncestorsAndSelf($items, $glue = '/', $keys = ['name'])
     {
-        return $items->map(function($item,$key) use($keys, $glue)
+        $items = $items->map(function($item,$key) use($keys, $glue)
         {
             $ancSelf = $item->ancestorsAndSelf()->get();
             $result = [ 'id' => $item->id];
@@ -40,6 +40,17 @@ class CollectionService
                 $result[$k] = $item->$k;
             }
             return $result;
-        })->all();
+        });
+        $sortedGroups = $items->groupBy('parent_' . $keys[0])->map(function($item) use($keys)
+        {
+            return $item->sortBy(function ($item, $key) use($keys) {
+                return str_slug($item[$keys[0]]);
+            });
+        });
+        $result = [];
+        foreach($sortedGroups as $group) {
+            $result = array_merge_recursive($result,$group->all());
+        }
+        return $result;
     }
 }
