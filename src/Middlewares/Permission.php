@@ -43,7 +43,8 @@ class Permission
      * @var array
      */
     private $exceptRoutes = [
-        'admin.dashboard.index'
+        'admin.dashboard.index',
+        'admin.dashboard.videos'
     ];
 
     /**
