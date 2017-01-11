@@ -88,11 +88,12 @@ class Handler extends ExceptionHandler
      */
     private function getEmailDatas($request, $e)
     {
+        $session = $request->session()->all();
         return [
             'date'          => Carbon::now()->format('d.m.Y H:i:s'),
             'rUser'         => $request->user(),
-            'rSessionOld'   => $request->session()->all()['flash']['old'],
-            'rSessionNew'   => $request->session()->all()['flash']['new'],
+            'rSessionOld'   => isset($session['flash']) ? $session['flash']['old'] : [],
+            'rSessionNew'   => isset($session['flash']) ? $session['flash']['new'] : [],
             'rAll'          => $request->all(),
             'rIp'           => $request->ip(),
             'rDecodedPath'  => $request->decodedPath(),
