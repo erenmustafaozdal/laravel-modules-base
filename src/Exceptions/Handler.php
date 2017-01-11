@@ -91,8 +91,8 @@ class Handler extends ExceptionHandler
         return [
             'date'          => Carbon::now()->format('d.m.Y H:i:s'),
             'rUser'         => $request->user(),
-            'rSessionOld'   => $request->session()->all()['flash']['old'],
-            'rSessionNew'   => $request->session()->all()['flash']['new'],
+            'rSessionOld'   => isset($request->session()->all()['flash']) ? $request->session()->all()['flash']['old'] : [],
+            'rSessionNew'   => isset($request->session()->all()['flash']) ? $request->session()->all()['flash']['new']: [],
             'rAll'          => $request->all(),
             'rIp'           => $request->ip(),
             'rDecodedPath'  => $request->decodedPath(),
