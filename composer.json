@@ -16,7 +16,6 @@
             "src/Helpers/helpers.php"
         ]
     },
-    "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
         "illuminate/support": "~5",
@@ -24,7 +23,7 @@
         "cartalyst/sentinel": "2.0.*",
         "yajra/laravel-datatables-oracle": "6.10.*",
         "intervention/image": "2.3.*",
-        "snowfire/beautymail": "dev-master",
+        "snowfire/beautymail": "dev-master@dev",
         "predis/predis": "~1.0"
     },
     "require-dev": {
