@@ -55,7 +55,7 @@ trait ModelDataTrait
     public function setNode($class, Request $request, $type = 'store')
     {
         if ( ! $request->has('position')) {
-            $model = $class::find($request->input('parent'));
+            $model = $class::findOrFail($request->input('parent'));
             $this->makeChildOf($model);
             return;
         }
@@ -63,19 +63,19 @@ trait ModelDataTrait
         $input = $type === 'store' ? 'parent' : 'related';
         switch($request->input('position')) {
             case 'firstChild':
-                $model = $class::find($request->input($input));
+                $model = $class::findOrFail($request->input($input));
                 $this->makeFirstChildOf($model);
                 break;
             case 'lastChild':
-                $model = $class::find($request->input($input));
+                $model = $class::findOrFail($request->input($input));
                 $this->makeChildOf($model);
                 break;
             case 'before':
-                $model = $class::find($request->input('related'));
+                $model = $class::findOrFail($request->input('related'));
                 $this->moveToLeftOf($model);
                 break;
             case 'after':
-                $model = $class::find($request->input('related'));
+                $model = $class::findOrFail($request->input('related'));
                 $this->moveToRightOf($model);
                 break;
         }
