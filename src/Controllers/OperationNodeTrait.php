@@ -144,8 +144,8 @@ trait OperationNodeTrait
                 : $class::where('parent_id',$relation_id)->get()->toHierarchy();
         }
 
-//        return $class::findOrFail(100)->descendants()->limitDepth(1)->get(); #################
-        return $class::find($this->request->id)->descendants()->limitDepth(1)->get();
+        return $class::findOrFail(100)->descendants()->limitDepth(1)->get(); #################
+//        return $class::find($this->request->id)->descendants()->limitDepth(1)->get();
     }
 
     /**
