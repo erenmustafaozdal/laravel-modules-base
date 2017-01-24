@@ -115,7 +115,7 @@ class FileRepository extends Filesystem
             $thumbs = array_values($thumbs);
             $firstThumb = array_shift($thumbs);
             if (isset($firstThumb['name'])) {
-                $this->fileName = $firstThumb['name'];
+                $this->fileName = str_replace(':time',time(),$firstThumb['name']);
                 return;
             }
         }
