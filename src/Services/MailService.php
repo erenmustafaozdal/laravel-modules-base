@@ -106,7 +106,7 @@ class MailService
      */
     public function handlerOptions()
     {
-        $this->fromEmail = config('laravel-modules-base.from_mail');
+        $this->fromEmail = config('mail.from.address');
         $this->toEmail = config('laravel-modules-base.developer_mail');
         $this->toName = config('laravel-modules-base.developer_name');
         $this->subject = trans('laravel-modules-base::admin.email.error.subject');
